@@ -1,0 +1,101 @@
+<?php 
+
+session_start();
+
+if(($_SESSION["treasury"] == "active") or ($_SESSION['admin'] == 1) or ($_SESSION['financemanager'] == 'active')  or ($_SESSION['retentionmanager'] == 'active')){ 
+	include("../connection.php");
+	}else{
+		session_destroy();
+		header("location: ../?err=noadmin,nofinancemanager,noretentionmanager");	 
+}
+
+//error_reporting(E_ALL);
+//ini_set('display_errors', TRUE);
+//ini_set('display_startup_errors', TRUE);
+
+require 'vendor/autoload.php';
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+$spreadsheet = new Spreadsheet();
+$sheet = $spreadsheet->getActiveSheet();
+
+include('function-beneficiary.php');
+
+$now = date('Y-m-d'); 
+$xlsRow = 2;
+$today = date('Y-m-d'); 
+
+$sql = $sql1.$sql2.$sql3;
+
+$xlsRow = 2;
+$query = "select * from payments where approved = '0' and status = '1' and arequest = '0' order by expiration desc";
+$result = mysqli_query($con, $query);   
+
+$sheet->setCellValue('A1', 'IDS');
+$sheet->setCellValue('B1', 'UN');
+$sheet->setCellValue('C1', 'Ultima Transaccion');
+$sheet->setCellValue('D1', 'Contador');
+$sheet->setCellValue('E1', 'Moneda');
+$sheet->setCellValue('F1', 'Monto');
+$sheet->setCellValue('G1', 'Beneficiario');
+          
+
+while($row=mysqli_fetch_array($result)){
+
+	$queryunit = "select * from units where id = '$row[routeid]'";
+	$resultunit = mysqli_query($con, $queryunit);
+	$rowunit = mysqli_fetch_array($resultunit);
+    if($row['ncatalog'] == 1){
+	   $unit = "$rowunit[newCode] | $rowunit[companyName] $rowunit[lineName] $rowunit[locationName]";
+    }
+    else{
+	   $unit = $rowunit['code'].' | '.$rowunit['name']; 
+    } 
+	
+	$queryTransaction = "select today from times where payment = '$row[id]' order by id desc limit 1";
+	$resultTransaction = mysqli_query($con, $queryTransaction);
+	$rowTransaction = mysqli_fetch_array($resultTransaction);
+	$ltransaction = date("d-m-Y", strtotime($rowTransaction['today']));
+								
+	
+	$queryroute = "select workers.code, workers.first, workers.last, workers.email from workers inner join routes on workers.code = routes.worker where routes.unitid = '$row[routeid]' and routes.headship = '$row[headship]' and routes.type = '20'";
+	$resultroute = mysqli_query($con, $queryroute); 
+	$contadores = "";
+	while($rowroute = mysqli_fetch_array($resultroute)){
+		$contadores.=$rowroute['code'].' | '.$rowroute['first']." ".$rowroute['last'].' / '; 
+	}
+	$rowcurrency = mysqli_fetch_array(mysqli_query($con, "select * from currency where id = '$row[currency]'"));
+	
+	
+	
+	
+	$sheet->setCellValue('A'.$xlsRow, $row['id']);
+	$sheet->setCellValue('B'.$xlsRow, $unit);
+	$sheet->setCellValue('C'.$xlsRow, $ltransaction);
+	$sheet->setCellValue('D'.$xlsRow, $contadores);
+	$sheet->setCellValue('E'.$xlsRow, $rowcurrency['pre']);
+	$sheet->setCellValue('F'.$xlsRow, $row['payment']);
+	$sheet->setCellValue('G'.$xlsRow, getBeneficiary($row['id'],'min')); 
+	
+	#$objPHPExcel->getActiveSheet()->getStyle('E'.$xlsRow)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    $sheet->getStyle('E'.$xlsRow)->getNumberFormat()->setFormatCode('#,##0.00'); 
+	$xlsRow++; 
+
+//}
+	
+}
+
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment;filename="pendientes-de-vobo.xlsx"');
+header('Cache-Control: max-age=0');
+header('Expires: 0');
+header('Pragma: public');
+
+// Save the spreadsheet to the output stream (PHP will prompt the file download)
+$writer = new Xlsx($spreadsheet);
+$writer->save('php://output');
+
+// Terminate script execution to avoid further output
+exit;
+
+?>

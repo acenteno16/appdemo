@@ -1,0 +1,2789 @@
+<?php 
+
+include("session-treasury.php"); 
+require('functions.php');
+
+$id = isset($_GET['id']) ? sanitizeInput(intval($_GET['id']), $con) : 0; 
+
+$querypconfirm  = "select * from payments where id = ?";
+$stmtpconfirm  = $con->prepare($querypconfirm );
+$stmtpconfirm ->bind_param("i", $id);
+$stmtpconfirm ->execute();
+$resultpconfirm  = $stmtpconfirm ->get_result();
+$rowpconfirm  = $resultpconfirm ->fetch_assoc();
+
+if($_SESSION['admin'] != "active"){
+	//header('location: dashboard.php');
+	//exit();
+} 
+
+$typeinc = 0;
+	
+?>
+<!DOCTYPE html>
+
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+
+<!--[if !IE]><!-->
+
+<html lang="en" >
+
+<!--<![endif]-->myb
+
+<!-- BEGIN HEAD -->
+
+<head>
+
+<meta charset="utf-8"/>
+
+<title>Aplicación de Pagos | Casa Pellas S.A.</title>
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+<meta content="" name="description"/>
+
+<meta content="" name="author"/>
+
+<!-- BEGIN GLOBAL MANDATORY STYLES -->
+
+<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/global/plugins/uniform/css/uniform.default.css" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css"/>
+
+<!-- END GLOBAL MANDATORY STYLES -->
+
+<!-- BEGIN PAGE LEVEL STYLES -->
+
+<link rel="stylesheet" type="text/css" href="../assets/global/plugins/select2/select2.css"/>
+
+<!-- END PAGE LEVEL SCRIPTS -->
+
+<!-- BEGIN THEME STYLES -->
+
+<link href="../assets/global/css/components.css" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/global/css/plugins.css" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/admin/layout/css/layout.css" rel="stylesheet" type="text/css"/>
+
+<link id="style_color" href="../assets/admin/layout/css/themes/blue.css" rel="stylesheet" type="text/css"/>
+
+<link href="../assets/admin/layout/css/custom.css" rel="stylesheet" type="text/css"/>
+
+<link rel="stylesheet" type="text/css" href="../assets/global/plugins/clockface/css/clockface.css"/>
+
+
+<link rel="stylesheet" type="text/css" href="../assets/global/plugins/bootstrap-datepicker/css/datepicker.css"/>
+
+<link rel="stylesheet" type="text/css" href="../assets/global/plugins/bootstrap-timepicker/css/bootstrap-timepicker.min.css"/>
+
+<link rel="stylesheet" type="text/css" href="../assets/global/plugins/bootstrap-colorpicker/css/colorpicker.css"/>
+
+<link rel="stylesheet" type="text/css" href="../assets/global/plugins/bootstrap-daterangepicker/daterangepicker-bs3.css"/>
+
+<link rel="stylesheet" type="text/css" href="../assets/global/plugins/bootstrap-datetimepicker/css/datetimepicker.css"/>
+
+<!-- END THEME STYLES -->
+
+
+
+<link rel="shortcut icon" href="favicon.ico"/>
+
+</head>
+
+<!-- END HEAD -->
+
+<!-- BEGIN BODY -->
+
+
+
+<body class="page-header-fixed page-quick-sidebar-over-content " onLoad="javascript:reloadNumbers(),reloadRouteView()"> 
+
+<!-- BEGIN HEADER -->
+
+<?php include("header.php"); ?>
+
+<!-- END HEADER -->
+
+<div class="clearfix">
+
+</div>
+
+<!-- BEGIN CONTAINER -->
+
+<div class="page-container">
+
+	<!-- BEGIN SIDEBAR -->
+
+	<?php include("side.php"); ?>
+
+	<!-- END SIDEBAR -->
+
+	<!-- BEGIN CONTENT -->
+
+	<div class="page-content-wrapper">
+
+		<div class="page-content">
+
+			<!-- BEGIN PAGE HEADER-->
+
+			<div class="row">
+
+				<div class="col-md-12">
+
+					<!-- BEGIN PAGE TITLE & BREADCRUMB-->
+
+					<h3 class="page-title">
+
+					Pagos <small>Solicitud de Pago</small>
+
+					</h3>
+
+					<ul class="page-breadcrumb breadcrumb">
+					  <li>
+
+						  <i class="fa fa-home"></i>
+
+						  <a href="dashboard.php">Inicio</a>
+
+						  <i class="fa fa-angle-right"></i>
+
+						</li>
+
+						<li>
+
+							<a href="payments.php">Pagos</a></li>
+                             <i class="fa fa-angle-right"></i>
+
+						<li>
+
+							<a href="#">Solicitudes de pagos</a>
+
+						</li>
+
+					</ul>
+
+					<!-- END PAGE TITLE & BREADCRUMB-->
+
+				</div>
+
+			</div>
+
+			<!-- END PAGE HEADER-->
+
+			<!-- BEGIN PAGE CONTENT-->
+
+			<div class="row">
+
+				<div class="col-md-12">
+
+					<div class="tabbable tabbable-custom boxless tabbable-reversed">
+
+						
+
+					
+
+							
+
+							<div class="tab-pane" id="tab_1">
+
+								<div class="portlet box blue">
+
+									<div class="portlet-title">
+
+										<div class="caption">
+
+										
+
+										</div>
+
+										
+									</div>
+
+									<div class="portlet-body form">
+
+										<!-- BEGIN FORM-->
+
+										<form name="porder" id="porder" action="payment-order-repair-currency-code.php" class="horizontal-form" method="post" enctype="multipart/form-data" onsubmit="return validateForm();"> 
+        
+
+											<div class="form-body">
+
+												<h3 class="form-section">Información del Proveedor/Colaborador</h3> 
+                                                <div class="row"><!--/span-->
+
+													<div class="col-md-2">
+
+													  <div class="form-group">
+
+	<label class="control-label">ID de Pago:</label>
+
+						
+										
+											  <input name="id" type="text" class="form-control" id="id" value="<?php echo $rowpconfirm['id']; ?>" readonly>  
+								
+															<div title="Page 5">
+															  <div>
+															    <div></div>
+														      </div>
+													    </div>
+													  </div>
+
+													</div> 
+                                                    
+<?php
+$queryfilemain = "select * from files where payment = '$rowpconfirm[id]' and bill = '0' order by id asc limit 1"; 
+$resultfilemain = mysqli_query($con, $queryfilemain);
+$rowfilemain = mysqli_fetch_array($resultfilemain);
+
+?>                                                    
+                                                    
+                                                    <div class="col-md-10 ">
+													  <div class="form-group">
+														<label>Archivo:</label><?php 
+$thefilelink = cleanLink($rowfilemain['link']);
+$queryfbox = "select * from filebox where url = '$thefilelink'"; 
+$resultfbox = mysqli_query($con, $queryfbox);
+$rowfbox=mysqli_fetch_array($resultfbox);
+
+?>
+														<input type="hidden" name="fileid[]" id="fileid[]" value="<?php echo $rowfilemain['id']; ?>">
+                                                        <input type="hidden" name="file[]" id="file[]" value="http://getpay.casapellas.com.ni/admin/visor.php?key=<?php echo $rowfbox['url'];  ?>">
+														
+						
+             		  <input name="idfileview" type="text" class="form-control" id="idfile" value="<?php echo $rowfbox['id']." | ".$rowfbox['title']; ?>" readonly>  
+                      
+                                                                   
+                       <br> 
+
+    
+                                                      <!--/row--></div>
+													</div>
+
+													<!--/span-->
+
+												</div>
+
+												<div class="row"><!--/span-->
+
+												
+                                               
+                                               <div class="col-md-4">
+
+													  <div class="form-group">
+
+														<label class="control-label">Tipo de Beneficiario:</label>
+
+<input name="dspayment" type="hidden" id="dspayment" value="<?php echo $rowpconfirm['btype'];  ?>"><?php 
+switch($rowpconfirm['btype']){
+	case 1:
+	echo "Proveedores";
+	break;
+	case 2:
+	echo "Colaboradores";
+	break;
+}
+	
+	?>
+															
+														<script type="text/javascript">
+function selectRecipient(){
+	
+	var recipient = document.getElementById("dspayment").value;
+	if(recipient == 0){
+		document.getElementById("dproviders").style.display = "none";
+		document.getElementById("dworkers").style.display = "none";
+		document.getElementById("provider").value = "";
+		document.getElementById("collaborator").value = "";
+	}if(recipient == 1){
+		document.getElementById("dproviders").style.display = "block";
+		document.getElementById("dworkers").style.display = "none";
+		document.getElementById("collaborator").value = "";
+	}if(recipient == 2){
+		document.getElementById("dproviders").style.display = "none";
+		document.getElementById("dworkers").style.display = "block";
+		document.getElementById("provider").value = "";
+	}
+	
+}
+</script>													
+
+													</div>
+                                               
+                                               </div>
+                                           </div>
+                                                    
+                                                    
+                                                    <div class="row" id="dproviders" style="display:<?php if($rowpconfirm['btype'] == 1) echo 'block'; else echo 'none'; ?>"><!--/span-->
+
+													<div class="col-md-12">
+
+													  <div class="form-group">
+
+	<label class="control-label">Código | Nombre:</label>
+
+<input name="provider" type="hidden" id="provider" value="<?php echo $rowpconfirm['provider']; ?>">
+<?php 
+$queryproviders = "select * from providers where id = '$rowpconfirm[provider]'";
+$resultproviders = mysqli_query($con, $queryproviders);
+$rowproviders=mysqli_fetch_array($resultproviders);
+echo $rowproviders['code']." | ".$rowproviders['name']; 
+?>
+											
+										
+													  </div>
+
+													</div>
+
+													<!--/span-->
+
+												</div>
+                                                
+                                                <div class="row" id="dworkers" style="display:<?php if($rowpconfirm['btype'] == 2) echo 'block'; else echo 'none'; ?>;"><!--/span-->
+
+													<div class="col-md-12">
+
+													  <div class="form-group">
+
+	<label class="control-label">Código | Nombre:</label>
+
+						
+	<input type="hidden" id="collaborator" name="collaborator" value="<? echo $rowpconfirm['collaborator']; ?>">										<?php $queryworkers = "select * from workers where id = '$rowpconfirm[collaborator]'";
+$resultworkers = mysqli_query($con, $queryworkers);
+$rowworkers=mysqli_fetch_array($resultworkers);
+echo $rowworkers['code']." | ".$rowworkers['first']." ".$rowworkers['last'];
+?>
+
+															
+													  </div>
+
+													</div>
+
+													<!--/span-->
+
+												</div>
+
+												<span class="form-group">
+											
+												</span><!--/row--><!--/row-->
+		<h3 class="form-section">Concepto de Pago</h3>
+        
+												<div class="row">
+
+													
+
+                                                    <div class="col-md-12 ">
+													  <div class="form-group">
+														<label>Descripción:</label>
+                                                        <textarea name="description" rows="2" class="form-control" id="description" onFocus="validateFirst();" readonly><?php echo $rowpconfirm['description']; ?></textarea>
+<script>
+function validateFirst(){
+	var recipient = document.getElementById("dspayment").value;
+	var provider = document.getElementById("provider").value;
+	var collaborator = document.getElementById("collaborator").value;	
+	if(recipient == 0){
+	document.getElementById("dspayment").focus(); 
+	alert('Usted debe de seleccionar el tipo de beneficiario.');
+	}
+	if((recipient == 1) && (provider == "")){
+		document.getElementById("provider").focus(); 
+		alert('Usted debe de seleccionar un Proveedor.');
+		return false;
+	}
+	if((recipient == 2) && (collaborator == "")){
+		document.getElementById("collaborator").focus(); 
+		alert('Usted debe de seleccionar un Colaborador.');
+		return false;
+	}
+}
+                    </script>
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    <?php //start bill 
+													
+	
+	$querybill = "select * from bills where payment = '$rowpconfirm[id]'";
+	$resultbill = mysqli_query($con, $querybill);
+	$numbill = mysqli_num_rows($resultbill);	
+	if($numbill > 0){	
+	while($rowbill=mysqli_fetch_array($resultbill)){
+		
+		$billcurrency = $rowbill['currency']; 
+		
+																							
+  ?>
+
+<div id="bill_<?php echo $typeinc; ?>">
+<?php //Tipo ?>  
+<div class="col-md-4">
+
+													  <div class="form-group">
+
+														<label class="control-label">Tipo:</label>
+<?php $queryt = "select * from categories where id = '$rowbill[type]'";
+$resultt = mysqli_query($con, $queryt);
+$numt = mysqli_num_rows($resultt);
+$rowt = mysqli_fetch_array($resultt);
+?>
+<input type="hidden" id="type[]" name="type[]" value="<?php echo $rowt['id']; ?>">
+<input name="newtype" type="text" class="form-control" id="newtype" value="<?php echo $rowt['account'].' | '.$rowt['name']; ?>" readonly>
+														
+
+													  </div>
+
+													</div>                                                    
+<?php //Concepto ?>                                                    
+<div class="col-md-4">
+
+													  <div class="form-group">
+
+															<label class="control-label">Concepto:</label>
+                                                            
+                                                            
+<?php
+$queryconcept = "select * from categories where id = '$rowbill[concept]'";
+$resultconcept = mysqli_query($con, $queryconcept);
+$rowconcept=mysqli_fetch_array($resultconcept);
+?>                                                            <input type="hidden" id="concept[]" name="concept[]" value="<?php echo $rowconcept['id']; ?>">
+<input name="newconcept" type="text" class="form-control" id="newconcept" value="<?php echo $rowconcept['account']." | ".$rowconcept['name']; ?>" readonly>
+
+
+
+												       
+												      </div>
+                                                    </div>
+                                                    
+<?php //Categoria ?>                                                    
+<div class="col-md-4"> 
+                                                      <div class="form-group">
+     <label class="control-label">Categoría:</label>
+
+            <?php 
+			
+			$queryconcept2 = "select * from categories where id = '$rowbill[concept2]'";
+			$resultconcept2 = mysqli_query($con, $queryconcept2);
+			$rowconcept2=mysqli_fetch_array($resultconcept2);
+				
+			?>
+            
+            <input type="hidden" id="concept2[]" name="concept2[]" value="<?php echo $rowconcept2['id']; ?>"> 
+            <input name="newconcept2" type="text" class="form-control" id="newconcept2" value="<?php echo $rowconcept2['account']." | ".$rowconcept2['name']; ?>" readonly>
+            
+            
+                            </div>
+                                                    </div>
+                                                 
+<?php /*<input type="hidden" id="billid[]" name="billid[]" value="<?php echo $rowbill['id']; ?>">   */ ?>                                            
+
+<?php //Tipo ?>
+<div class="col-md-3">
+
+													  <div class="form-group">
+
+														<label class="control-label">Tipo de Documento:</label>
+
+															<select name="dtype[]" class="form-control" id="dtype[]">
+<?php  
+$querydtype = "select * from documenttype";
+$resultdtype = mysqli_query($con, $querydtype);
+while($rowdtype=mysqli_fetch_array($resultdtype)){
+	
+																?>
+    <option value="<?php echo $rowdtype['id']; ?>" <?php if($rowdtype['id'] == $rowbill['dtype']){ echo "selected"; }?>><?php echo $rowdtype['name']; ?></option> 
+    <?php
+ } 
+ 
+ ?>
+</select>
+																									
+
+													</div>
+                                               
+                                               </div>
+<?php //Factura No ?>                                                     <div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Documento No:</label>
+                                                        <input name="bill[]" type="text" class="form-control" id="bill[]" value="<?php echo $rowbill['number']; ?>" onChange="javascript:validateFirst(),validateBill();" readonly>
+<script>
+
+function validateBill(){
+
+loadBeneficiaries2(provider);
+//loadcurrency2pay(provider);
+
+
+var recipient = document.getElementById("dspayment").value;
+if(recipient == 1){ 
+
+var provider = document.getElementById('provider').value;			
+i=0;
+for (var obj in document.getElementsByName('bill[]')){
+//
+
+//var billnumber = document.getElementsByName('bill[]')[i].value;
+document.getElementsByName('filename[]')[i].value = "Documento "+billnumber;
+//  
+if (i<document.getElementsByName('bill[]').length){
+
+
+		var billnumber = document.getElementsByName('bill[]')[i].value;
+		
+		cleanBill(billnumber,provider,i);
+
+  }
+  i++;
+}
+}
+
+}
+
+function loadBeneficiaries2(id){
+	$.post("reload-beneficiaries2.php", { variable: id }, function(data){
+		if(data.length > 1){
+			document.getElementById('dbeneficiarie').style.display = "block";
+			$("#beneficiarie").html(data);
+		}else{
+			document.getElementById('dbeneficiarie').style.display = "none"; 
+			document.getElementById('dbeneficiarie').value = 0;
+		}
+		
+});		
+}
+ 
+function cleanBill(billnumber,provider,i){
+	$.post("validate-bill.php", { variable: billnumber, variable2: provider, payment: '<?php echo $rowpconfirm['id']; ?>' }, function(data){
+	
+		if(data == 0){
+			
+		}else{
+				
+			alert(data);
+			document.getElementsByName('bill[]')[i].value = "";
+			document.getElementsByName('bill[]')[i].focus();
+			
+		}
+	
+		
+});	
+}
+
+</script>						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+<?php //Recibido de Factura ?> 
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Recibido de Documento:</label> 
+                                                        <input name="billdate2[]" type="text" class="form-control form-control-inline date-picker" id="billdate2[]" value="<?php 
+
+if($rowbill['billdate2'] != "0000-00-00"){
+	if($rowbill['billdate2'] != "1969-12-31"){
+		$billdate2 = strtotime($rowbill['billdate2']);
+		echo date('d-m-Y', $billdate2); 
+	}
+} 
+?>" readonly>
+						
+                                                          
+                       
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                      
+                                                      <!--/row--></div>
+													</div>
+<?php //Fecha de Factura ?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Fecha de Documento:</label> 
+                                                        <input name="billdate[]" type="text" class="form-control form-control-inline date-picker" id="billdate[]" value="<?php 
+	if($rowbill['billdate'] != "0000-00-00"){
+		if($rowbill['billdate'] != "1969-12-31"){
+			$billdate = strtotime($rowbill['billdate']);
+			echo date('d-m-Y', $billdate);
+		}
+	}
+														 ?>" onChange="javascript:reloadNumbers();" readonly>
+						
+                                                          
+                       
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                      
+                                                      <!--/row--></div>
+													</div>
+<div class="row"></div>                                                    
+<?php //Subtotal que graba ?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Sub-total (que graba IVA):</label>
+                                                        <input name="stotal[]" type="text" class="form-control" id="stotal[]" value="<?php echo $rowbill['stotal']; ?>" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers(this.value);" readonly>
+</div>
+</div>
+<?php //Sub total que no graba?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Sub-total (Exento de IVA):</label>
+                                                        <input name="stotal2[]" type="text" class="form-control" id="stotal2[]" value="<?php echo $rowbill['stotal2']; ?>" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers(this.value);" readonly>
+						
+                      
+                </div>
+													</div> 
+<?php //Monto alojamiento ?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Monto Alojamiento:</label>
+                                                        <input name="inturammount[]" type="text" class="form-control" id="inturammount[]" value="<?php echo $rowbill['intur']; ?>" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers(this.value);" readonly>
+						
+                      
+                   </div>
+													</div>
+<?php //Monto INTUR ?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Monto INTUR:</label>
+                                                        <input name="inturammount2[]" type="text" class="form-control" id="inturammount2[]" value="<?php echo $rowbill['inturammount']; ?>" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers(this.value);" readonly>
+						
+                      
+                                                          
+               </div>
+													</div>
+<?php //StOTAL ?>                                                     
+<div class="col-md-3 "> 
+						    <div class="form-group">
+							  <label>Subtotal:</label>
+                              <input name="bstotal[]" type="text" class="form-control" id="bstotal[]" value="0.00" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div>
+<?php //IVA ?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>IVA:</label>
+                                                        <input name="tax[]" type="text" class="form-control" id="tax[]" value="<?php echo $rowbill['tax']; ?>" readonly>
+						
+                </div>
+													</div>
+<?php //Total ?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Total:</label>
+                                                        <input name="ammount[]" type="text" class="form-control" id="ammount[]" value="<?php echo $rowbill['ammount']; ?>" readonly>
+						
+          </div>
+													</div>
+<?php //TC ?>                                       
+<div class="col-md-3 "> 
+													  <div class="form-group">
+														<label>TC:</label>
+                                                        <input name="btc[]" type="text" class="form-control" id="btc[]" value="N/A" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div> 
+
+<div class="row"></div> 
+<?php //Cantidad en letras ?>
+<div class="col-md-4 ">
+													  <div class="form-group">
+														<label>Cantidad en letras:</label> 
+                                                        <input name="letters[]" type="text" class="form-control" id="letters[]" value="<?php echo $rowbill['letters'];?>" readonly> 
+						
+                                                          
+              </div>
+													</div>
+<?php //IMI ?>
+<div class="col-md-2 "> 
+													  <div class="form-group">
+														<label>IMI: (C$ Córdobas)</label>
+                                                        <input name="bimi[]" type="text" class="form-control" id="bimi[]" value="0.00" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div>
+<?php //Excento IMI ?>                                                    
+<div class="col-md-2 " id="dnammount[]" name="dnammount[]"> 
+													  <div class="form-group">
+														<label>Exento IMI:</label>
+                                                        <input name="exempt2[]" type="text" class="form-control" id="exempt2[]" value="<?php if($rowbill['exempt2'] > 0) echo $rowbill['exempt2']; ?>" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();" placeholder="" readonly> 
+						 
+                      
+                                                          
+                      </div>
+													</div>                                     
+<?php //IR ?>                                       
+<div class="col-md-2 "> 
+													  <div class="form-group">
+														<label>IR: (C$ Córdobas)</label>
+                                                        <input name="bir[]" type="text" class="form-control" id="bir[]" value="0.00" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div> 
+<?php //Excento IR ?>                                                    
+<div class="col-md-2 " id="dnammount[]" name="dnammount[]"> 
+													  <div class="form-group">
+														<label>Exento IR:</label>
+                                                        <input name="exempt[]" type="text" class="form-control" id="exempt[]" value="<?php if($rowbill['exempt'] > 0) echo $rowbill['exempt']; ?>" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();" placeholder="" readonly> 
+						 
+                      
+                                                          
+                      </div>
+													</div>
+
+                                     
+   
+    <input type="hidden" name="ret1a[]" id="ret1a[]" value="0">
+	<input type="hidden" name="ret2a[]" id="ret2a[]" value="0">
+  
+    
+    <div id="row">
+                                                    <div class="col-md-12 "> &nbsp;</div> 
+                                                    </div> 
+ 
+ 
+ </div> 
+ <?php 
+ 
+ $typeinc++; 
+ 
+ } 
+ 
+ ?>
+ <input type="hidden" name="mybillcurrency" id="mybillcurrency" value="<? echo $billcurrency; ?>"> 
+<div id="dbill" style="display:none">
+<input id="clickMe" type="button" value="clickme" onclick="reloadBills();" />
+</div>
+ 
+ <?php } //end bill 
+ 
+ 
+ else{  ?>
+ 
+   
+ <input type="hidden" id="billid[]" name="billid[]" value="0">
+ <div id="bill_<?php echo $typeinc; ?>">
+<?php 
+ 
+$typeinc++; 
+ 
+?>
+ 
+ <?php //tipo ?>
+ <div class="col-md-4">
+
+													  <div class="form-group">
+
+														<label class="control-label">Tipo:</label>
+<?php $queryt = "select * from categories where type = 1";
+$resultt = mysqli_query($con, $queryt);
+$numt = mysqli_num_rows($resultt);
+$rowt = mysqli_fetch_array($resultt);
+?> 
+
+ <?php $sqlcusers = "";
+$querycusers = "select * from categoriesusers where worker='$rowpconfirm[userid]'"; 
+$resultcusers = mysqli_query($con, $querycusers);
+while($rowcusers=mysqli_fetch_array($resultcusers)){
+	$sqlcusers.= " or (id = '$rowcusers[category]')";
+}
+if($sqlcusers == ''){
+	$sql1 = " and userblock = 0";
+}else{
+	$sql1 = " and ((userblock = 0) ".$sqlcusers.")"; 
+}
+
+$queryt1 = "select * from categories where parentcat = $rowt[id]".$sql1." order by name asc";
+
+//echo $queryt1;
+
+
+?>
+															<select name="type[]" class="form-control" id="type_<?php echo $typeinc; ?>" onChange="javascript:reloadsconcept(this.value,<?php echo $typeinc; ?>);">
+<option value="0" selected>Seleccionar</option>
+<?php //$queryt1 = "select * from categories where parentcat = $rowt[id] order by name asc";
+$resultt1 = mysqli_query($con, $queryt1);
+while($rowt1=mysqli_fetch_array($resultt1)){
+?>														<option value="<?php echo $rowt1['id']; ?>" <?php if($rowpconfirm['type'] == $rowt1['id']) echo 'selected'; ?>><?php echo $rowt1['name']; ?></option>
+<?php } ?>
+	 														</select>
+
+													  </div>
+
+													</div>                                                    
+<?php //concepto ?>
+<div class="col-md-4">
+
+													  <div class="form-group"> 
+
+															<label class="control-label">Concepto:</label>
+															<select name="concept[]" class="form-control" id="concept_<?php echo $typeinc; ?>" onChange="javascript:reloadsconcept2(this.value,<?php echo $typeinc; ?>);">
+<?php if($rowpconfirm['concept'] == 0){
+?>
+<option value="0">Esperando la selección de tipo para cargar la lista</option>
+<?php }else{ 
+$queryconcept = "select * from categories where parentcat = '$rowpconfirm[type]' order by account asc";
+$resultconcept = mysqli_query($con, $queryconcept);
+while($rowconcept=mysqli_fetch_array($resultconcept)){
+?>
+<option value="<?php echo $rowconcept['id']; ?>" <?php if($rowpconfirm['concept'] == $rowconcept['id']) echo 'selected'; ?>><?php echo $rowconcept['name']; ?></option>
+<?php } } ?>															</select>
+
+												       
+												      </div>
+                                                    </div>
+                                                    
+<?php //categoria ?>
+<div class="col-md-4"> 
+                                                      <div class="form-group">
+     <label class="control-label">Categoría:</label>
+
+												        <select name="concept2[]" class="form-control" id="concept2_<?php echo $typeinc; ?>">
+													          
+	<?php if($rowpconfirm['concept2'] == 0){
+	?>											          <option value="0">Esperando la selección de concepto para cargar la lista</option>
+			<?php }else{ 
+			$queryconcept2 = "select * from categories where parentcat = '$rowpconfirm[concept]' order by account asc";
+			$resultconcept2 = mysqli_query($con, $queryconcept2);
+			while($rowconcept2=mysqli_fetch_array($resultconcept2)){
+			?>									          <option value="<?php echo $rowconcept2['id']; ?>" <?php if($rowpconfirm['concept2'] == $rowconcept2['id'])?>><?php echo $rowconcept2['name']; ?></option>
+			<?php } } ?>					            </select>                                                  </div>
+                                                    </div>
+
+<?php //Tipo de documento ?>
+<div class="col-md-3">
+
+													  <div class="form-group">
+
+														<label class="control-label">Tipo de Documento:</label>
+
+															<select name="nd[]" class="form-control" id="nd[]" readonly>
+<option value="0">Factura</option>
+<option value="1">Nota de Debito (Proveedor)</option>
+
+</select>
+																									
+
+													</div>
+                                               
+                                               </div>
+<?php //No factura ?>                                                    
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Documento No:</label>
+                                                        <input name="bill[]" type="text" class="form-control" id="bill[]" value="" onChange="javascript:validateBill();" onFocus="validateProvider();" readonly>
+<script>
+function validateProvider(){
+var provider = document.getElementById('provider').value;			
+var recipient = document.getElementById("dspayment").value;
+
+if(recipient == 0){
+	document.getElementById('dspayment').focus();
+	alert('Primero seleccionar el tipo de beneficiario.');	
+}
+if(recipient == 1){ 	
+	if(provider == ''){
+		document.getElementById('provider').focus();
+		alert('Primero seleccionar el proveedor #000X001.');
+	}else{
+		document.getElementById('provider').readOnly = true; 
+	} 
+}
+}
+
+function validateBill(){
+	
+	provider = document.getElementById('provider').value;
+	loadBeneficiaries2(provider);
+	
+	var recipient = document.getElementById("dspayment").value;
+	if(recipient == 1){
+		i=0;	
+		for (var obj in document.getElementsByName('bill[]')){
+			
+			if (i<document.getElementsByName('bill[]').length){
+			
+			
+				//
+			billnumber = document.getElementsByName('bill[]')[i].value;
+			/*document.getElementsByName('filename[]')[i].value = "Factura "+billnumber;*/ 
+			//
+				billnumber = document.getElementsByName('bill[]')[i].value;
+				cleanBill(billnumber,provider,i);
+			}
+  i++;
+}
+}
+}
+
+function loadBeneficiaries2(id){
+	$.post("reload-beneficiaries2.php", { variable: id }, function(data){
+		if(data.length > 1){
+			document.getElementById('dbeneficiarie').style.display = "block";
+			$("#beneficiarie").html(data);
+		}else{
+			document.getElementById('dbeneficiarie').style.display = "none"; 
+			document.getElementById('dbeneficiarie').value = 0;
+		}
+		
+});		
+}
+
+
+function cleanBill(billnumber,provider,i){
+	$.post("validate-bill.php", { variable: billnumber, variable2: provider }, function(data){
+	
+		if(data == 0){
+			
+		}else{
+				
+			alert(data);
+			document.getElementsByName('bill[]')[i].value = "";
+			document.getElementsByName('bill[]')[i].focus();
+			
+		}
+	
+		
+});	
+}
+
+</script>						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    
+<?php //Bill date Rec ?>                                                    
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Recibido de Factura:</label> 
+                                                        <input name="billdate2[]" type="text" class="form-control form-control-inline date-picker" id="billdate2[]" value="" readonly>
+						
+                                                          
+                       
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                      
+                                                      <!--/row--></div>
+													</div>
+                                                                            <?php //Bill date ?>                                                     <div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Fecha de Factura:</label> 
+                                                        <input name="billdate[]" type="text" class="form-control form-control-inline date-picker" id="billdate[]" value="" onChange="javascript:reloadNumbers();" readonly>
+						
+                                                          
+                       
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                      
+                                                      <!--/row--></div>
+													</div>
+
+
+
+<div class="row"></div>
+<?php //Monto que graba iva ?> 
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Sub-total (que graba IVA):</label>
+                                                        <input name="stotal[]" type="text" class="form-control" id="stotal[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();" readonly>
+						
+                      
+                                                          
+                      
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    
+<?php //Monto Exento de iva ?>
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Sub-total (exento de IVA):</label>
+                                                        <input name="stotal2[]" type="text" class="form-control" id="stotal2[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();" readonly>
+						
+                      
+                                                          
+                      
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                          
+<?php //INTUR ?>
+<div class="col-md-3 " id="dintur2[]" name="dintur2[]"> 
+													  <div class="form-group">
+														<label>Monto Alojamiento:</label>
+                                                        <input name="inturammount[]" type="text" class="form-control" id="inturammount[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();" readonly>  
+						
+                      
+                                                          
+                      
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                  
+<?php //Monto INTUR ?>
+<div class="col-md-3 " id="dintur2[]" name="dintur3[]"> 
+													  <div class="form-group">
+														<label>Monto INTUR:</label>
+                                                        <input name="inturammount2[]" type="text" class="form-control" id="inturammount2[]" value="" readonly >   
+						
+                      
+                                                          
+                      
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+
+
+
+<div class="row"></div> 
+<?php //Subtotal ?> 
+<div class="col-md-3 "> 
+						    <div class="form-group">
+							  <label>Subtotal:</label>
+                              <input name="bstotal[]" type="text" class="form-control" id="bstotal[]" value="0.00" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div>
+	
+<?php //IVA ?>                                                    
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>IVA:</label>
+                                                        <input name="tax[]" type="text" class="form-control" id="tax[]" value="" readonly>
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div> 
+
+<?php //Total ?>                                                    
+<div class="col-md-3 ">
+													  <div class="form-group">
+														<label>Total:</label>
+                                                        <input name="ammount[]" type="text" class="form-control" id="ammount[]" value="" readonly>
+						
+                                                          
+                      
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>                                                                        
+<?php //TC ?> 
+<div class="col-md-3 "> 
+													  <div class="form-group">
+														<label>TC:</label>
+                                                        <input name="btc[]" type="text" class="form-control" id="btc[]" value="N/A" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div> 
+                                                    
+                                                   
+<div class="row"></div>
+<?php //Cantidad en letras ?>
+<div class="col-md-4 ">
+													  <div class="form-group">
+														<label>Cantidad en letras:</label> 
+                                                        <input name="letters[]" type="text" class="form-control" id="letters[]" value="" readonly> 
+						
+                                                          
+                    
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div> 
+
+ <?php //IMI ?>
+<div class="col-md-2 "> 
+													  <div class="form-group">
+														<label>IMI: (C$ Córdobas)</label>
+                                                        <input name="bimi[]" type="text" class="form-control" id="bimi[]" value="0.00" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div>
+ <?php //Exento IMI ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Exento IMI:</label> 
+                                                        <input name="exempt2[]" type="text" class="form-control" id="exempt2[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();" readonly> 
+						
+                                                          
+                    
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>                                                  
+<?php //IR ?>
+<div class="col-md-2 "> 
+													  <div class="form-group">
+														<label>IR: (C$ Córdobas)</label>
+                                                        <input name="bir[]" type="text" class="form-control" id="bir[]" value="0.00" onkeypress="return justNumbers(event);" readonly>  
+						 
+                      
+                                                          
+                      </div>
+													</div> 
+ <?php //Exento IR ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Exento IR:</label> 
+                                                        <input name="exempt[]" type="text" class="form-control" id="exempt[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();" readonly> 
+						
+                                                          
+                    
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+ 
+<input type="hidden" name="fileid[]" id="fileid[]" value="0">
+<input type="hidden" name="ret1a[]" id="ret1a[]" value="0">
+<input type="hidden" name="ret2a[]" id="ret2a[]" value="0">
+                                                  
+<div id="row">
+                                                    <div class="col-md-12 "> &nbsp;</div>
+                                                    </div>
+
+</div>
+ 
+<?php }  ?>
+ <div id="bill"></div>         
+   <script type="text/javascript">
+  var bill = 1; 
+  var cbill = parseInt(<?php echo $typeinc; ?>); 
+	function addBill(){
+	
+	var sametype = document.getElementById("sametype").checked;
+	
+	if(sametype == true){
+		
+	var lastlen = document.getElementsByName('type[]').length;
+	var i = lastlen-1;
+	var lasttype = document.getElementsByName('type[]')[i].value;
+	var lastconcept = document.getElementsByName('concept[]')[i].value;
+	var lastconcept2 = document.getElementsByName('concept2[]')[i].value; 
+	
+	var sel = document.getElementsByName('type[]')[i];
+	var lasttypen = sel.options[sel.selectedIndex].text;
+	
+	var sel2 = document.getElementsByName('concept[]')[i];
+	var lastconceptn = sel2.options[sel2.selectedIndex].text;
+	
+	var sel3 = document.getElementsByName('concept2[]')[i];
+	var lastconcept2n = sel3.options[sel3.selectedIndex].text;
+	
+	var billinfo0 = '<div id="bill_'+cbill+'">';
+ 
+   
+   var billinfo01 = '<div class="row"></div><div class="col-md-12"><hr><br></div><div class="row"></div><div class="col-md-4"><div class="form-group"><label class="control-label">Tipo:</label><select name="type[]" class="form-control" id="type_'+cbill+'"><option value="'+lasttype+'" selected>'+lasttypen+'</option></select></div></div>';
+    
+	    var billinfo02 = '<div class="col-md-4"><div class="form-group"><label class="control-label">Concepto:</label><select name="concept[]" class="form-control" id="concept_'+cbill+'"><option value="'+lastconcept+'">'+lastconceptn+'</option></select></div></div>';
+  
+	 
+	    var billinfo03 = '<div class="col-md-4"><div class="form-group"><label class="control-label">Categoría:</label><select name="concept2[]" class="form-control" id="concept2_'+cbill+'">><option value="'+lastconcept2+'">'+lastconcept2n+'</option></select></div></div>';
+    
+	 
+	 
+
+	}
+	else{
+		
+   var billinfo0 = '<div id="bill_'+cbill+'">';
+   //$("#bill").append(billinfo0);
+   
+   var billinfo01 = '<div class="row"></div><div class="col-md-12"><hr><br></div><div class="row"></div><div class="col-md-4"><div class="form-group"><label class="control-label">Tipo:</label><?php $queryt = "select * from categories where type = 1";
+$resultt = mysqli_query($con, $queryt);
+$numt = mysqli_num_rows($resultt);
+$rowt = mysqli_fetch_array($resultt);
+?><select name="type[]" class="form-control" id="type_'+cbill+'" onChange="javascript:reloadsconcept(this.value,'+cbill+');"><option value="0" selected>Seleccionar</option><?php $queryt1 = "select * from categories where parentcat = $rowt[id] order by name asc";
+$resultt1 = mysqli_query($con, $queryt1);
+while($rowt1=mysqli_fetch_array($resultt1)){
+?><option value="<?php echo $rowt1['id']; ?>" <?php if($rowpconfirm['type'] == $rowt1['id']) echo 'selected'; ?>><?php echo $rowt1['name']; ?></option><?php } ?></select></div></div>';
+     //$("#bill").append(billinfo01);
+	 <?php /*
+	 
+                                                    
+	 */ ?>
+	 
+	    var billinfo02 = '<div class="col-md-4"><div class="form-group"><label class="control-label">Concepto:</label><select name="concept[]" class="form-control" id="concept_'+cbill+'" onChange="javascript:reloadsconcept2(this.value,'+cbill+');"><?php if($rowpconfirm['concept'] == 0){
+?><option value="0">Esperando la selección de tipo para cargar la lista</option><?php }else{ 
+$queryconcept = "select * from categories where parentcat = '$rowpconfirm[type]' order by name asc";
+$resultconcept = mysqli_query($con, $queryconcept);
+while($rowconcept=mysqli_fetch_array($resultconcept)){
+?><option value="<?php echo $rowconcept['id']; ?>" <?php if($rowpconfirm['concept'] == $rowconcept['id']) echo 'selected'; ?>><?php echo $rowconcept['name']; ?></option>
+<?php } } ?></select></div></div>';
+     //$("#bill").append(billinfo02);
+	 
+	    var billinfo03 = '<div class="col-md-4"><div class="form-group"><label class="control-label">Categoría:</label><select name="concept2[]" class="form-control" id="concept2_'+cbill+'"><?php if($rowpconfirm['concept2'] == 0){
+	?><option value="0">Esperando la selección de concepto para cargar la lista</option><?php }else{ 
+			$queryconcept2 = "select * from categories where parentcat = '$rowpconfirm[concept]' order by name asc";
+			$resultconcept2 = mysqli_query($con, $queryconcept2);
+			while($rowconcept2=mysqli_fetch_array($resultconcept2)){
+			?><option value="<?php echo $rowconcept2['id']; ?>" <?php if($rowpconfirm['concept2'] == $rowconcept2['id'])?>><?php echo $rowconcept2['name']; ?></option><?php } } ?></select></div></div>';
+     //$("#bill").append(billinfo03);
+	 
+	 
+	} 
+	
+	 var billinfo1 = '<div class="col-md-3"><div class="form-group"><label class="control-label">Tipo de Documento:</label><select name="nd[]" class="form-control" id="nd[]"><option value="0">Factura</option><option value="1">Nota de Debito (Proveedor)</option></select><br><div class="row"></div></div></div><div class="col-md-3 "><div class="form-group"><label>Documento No:</label><input name="bill[]" type="text" class="form-control" id="bill[]" value="" onChange="javascript:validateBill();" onFocus="validateProvider();"><br><div class="row"></div></div></div><div class="col-md-3 "><div class="form-group"><label>Recibido de Documento:</label><input name="billdate2[]" type="text" class="form-control form-control-inline date-picker" id="billdate2[]" value="" readonly></div></div><div class="col-md-3"><div class="form-group"><label>Fecha de Documento:</label><input name="billdate[]" type="text" class="form-control form-control-inline date-picker" id="billdate[]" value="" onChange="javascript:reloadNumbers();" readonly></div></div><div class="row"></div><div class="col-md-3 "><div class="form-group"><label>Sub-total (que graba IVA):</label><input name="stotal[]" type="text" class="form-control" id="stotal[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();"><div class="row"></div></div></div><div class="col-md-3 "><div class="form-group"><label>Sub-total (exento de IVA):</label><input name="stotal2[]" type="text" class="form-control" id="stotal2[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();"><div class="row"></div></div></div><div class="col-md-3 " id="dintur2[]" name="dintur2[]"><div class="form-group"><label>Monto Alojamiento:</label><input name="inturammount[]" type="text" class="form-control" id="inturammount[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();"><div class="row"></div></div></div><div class="col-md-3 " id="dintur2[]" name="dintur3[]"><div class="form-group"><label>Monto INTUR:</label><input name="inturammount2[]" type="text" class="form-control" id="inturammount2[]" value="" readonly ><div class="row"></div></div></div><div class="row"></div><div class="col-md-3 "><div class="form-group"><label>Sub-total:</label><input name="bstotal[]" type="text" class="form-control" id="bstotal[]" value="" readonly></div></div><div class="col-md-3 "><div class="form-group"><label>IVA:</label><input name="tax[]" type="text" class="form-control" id="tax[]" value="" readonly></div></div><div class="col-md-3 "><div class="form-group"><label>Total:</label><input name="ammount[]" type="text" class="form-control" id="ammount[]" value="" readonly><div class="row"></div></div></div><div class="col-md-3 "><div class="form-group"><label>TC:</label><input name="btc[]" type="text" class="form-control" id="btc[]" value="N/A" readonly><div class="row"></div></div></div><div class="row"></div><div class="col-md-4 "><div class="form-group"><label>Cantidad en letras:</label><input name="letters[]" type="text" class="form-control" id="letters[]" value="" readonly><div class="row"></div></div></div><div class="col-md-2 "><div class="form-group"><label>IMI: (C$ Córdobas)</label><input name="bimi[]" type="text" class="form-control" id="bimi[]" value="" readonly><div class="row"></div></div></div><div class="col-md-2 "><div class="form-group"><label>Exento IMI:</label><input name="exempt2[]" type="text" class="form-control" id="exempt2[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();"> <div class="row"></div></div></div><div class="col-md-2 "><div class="form-group"><label>IR: (C$ Córdobas)</label><input name="bir[]" type="text" class="form-control" id="bir[]" value="" readonly><div class="row"></div></div></div><div class="col-md-2 "><div class="form-group"><label>Exento IR:</label><input name="exempt[]" type="text" class="form-control" id="exempt[]" value="" onkeypress="return justNumbers(event);" onKeyUp="javascript:reloadNumbers();"> <div class="row"></div></div></div><input type="hidden" name="ret1a[]" id="ret1a[]" value="0"><input type="hidden" name="ret2a[]" id="ret2a[]" value="0">'; 
+	 
+	 //
+	 //
+ 
+   var billinfo2 = '<div id="row"><div class="col-md-12 "> &nbsp;</div></div><div class="col-md-12"><button type="button" class="btn red icn-only" onclick="deleteBill('+cbill+'),reloadNumbers();"><i class="fa fa-trash-o"></i> Eliminar Documento</button></div>'; 
+   
+	 
+	 billunion = billinfo01+billinfo02+billinfo03+billinfo1+billinfo2;
+	 $("#bill").append('<div id="bill_'+cbill+'">'+billunion+'</div>');
+	 
+	 cbill++;
+	 ComponentsPickers.init();
+  
+}
+
+function deleteBill(id){ 
+	 $('#bill_'+id).remove();
+	 reloadNumbers();
+	  
+}
+</script>  
+        <?php /*  <div class="col-md-12" style=""><br><br>
+          
+          <label>Mismo tipo?</label>
+          <input name="sametype" type="checkbox" id="sametype">
+                                                   
+														<label>&nbsp;</label>
+                                                    <button type="button" class="btn blue icn-only" onclick="addBill();"><i class="fa fa-plus"></i> Agregar Documento</button>
+             </div>*/ ?> 
+               <div class="row"></div><br><br><br>
+               
+             <div class="col-md-12 ">   <h3 class="form-section">Totales de documentos</h3></div>
+<?php //SUBNTOTAL ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Subtotal:</label>
+                                                        <input name="stotalbill" type="text" class="form-control" id="stotalbill" value="" readonly>
+                                                        <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>             
+                                                    
+<?php //IVA ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>IVA:</label>
+                                                        <input name="totaltax" type="text" class="form-control" id="totaltax" value="" readonly> 
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    
+<?php //INTUR ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>INTUR:</label>
+                                                        <input name="totalintur" type="text" class="form-control" id="totalintur" value="" readonly> 
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    
+<?php //TOTAL PAGAR?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Total:</label>
+                                                        <input name="totalbill" type="text" class="form-control" id="totalbill" value="" readonly>
+                                                        <input name="retstotal" type="hidden" id="retstotal" value="0">
+<br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+													
+<?php //EXENTO ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Exento IMI:</label>
+                                                        <input name="gexempt2" type="text" class="form-control" id="gexempt2" value="" readonly>  
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div> 
+<?php //EXENTO ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Exento IR:</label>
+                                                        <input name="gexempt" type="text" class="form-control" id="gexempt" value="" readonly>  
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div> 
+                                                    
+<?php //MONEDA ?>                                                      
+<div class="col-md-12"> 
+
+ <h3 class="form-section">Moneda</h3>
+ 
+<div class="form-group"> <?php //<label>Moneda:</label> ?>
+
+<div class="row">
+<div class="col-md-3"> 
+  <input name="showcname" type="text" class="form-control" id="showcname" value="<?php 
+    
+$querycurrency = "select * from currency where id = '$billcurrency'";
+$resultcurrency = mysqli_query($con, $querycurrency);
+$rowcurrency=mysqli_fetch_array($resultcurrency);
+echo $rowcurrency['name'];
+?> " readonly> </div></div>
+  
+  
+<div class="radio-list" style="margin-left:30px; display:none;">
+											<?php $querycurrency = "select * from currency";
+$resultcurrency = mysqli_query($con, $querycurrency);
+$checked = 1;
+while($rowcurrency=mysqli_fetch_array($resultcurrency)){
+?>
+                                            <label class="radio-inline">
+										  <div class="radio1" id="uniform-optionsRadios4"><span class="checked2">
+                                          <input type="radio" name="currency" id="currency" onClick="javascript:reloadNumbers();" value="<?php echo $rowcurrency['id']; ?>" <?php if($billcurrency == 0){ if($checked == 1){ echo 'checked=""'; $checked++; }}else{ 
+										  if($billcurrency == $rowcurrency['id']){
+											  echo ' checked';
+										  }
+										  }?> readonly></span></div> <?php echo $rowcurrency['name']; ?></label>
+											                                           <?php } ?> 
+											
+										</div>
+									</div> </div> 
+ 
+ </div>                                           
+                                                    <h3 class="form-section">Retenciones</h3>
+                                                    	<div class="note note-danger" id="ocurrency" style="display:none;"> 
+
+						<p>
+
+							NOTA: Pagos en otras monedas generan su retención con fecha de libro mayor al momento de la provisión. 
+
+						</p> 
+
+					</div><div class="row">
+                                                    
+                                                    <div class="col-md-3 ">
+													  <input type="hidden" name="retention1" id="retention1" value="<?php echo $rowpconfirm['ret1']; ?>"><div class="form-group">
+														<label>Alcaldía (NIO C$):</label>
+                                                        <input readonly name="retention1view" type="text" class="form-control" id="retention1view" value="<?php if($rowpconfirm['ret1'] != 0){ echo $rowpconfirm['ret1']; } ?>" placeholder="%" onKeyUp="javascript:reloadNumbers();" onkeypress="return justNumbers(event);"><span class="input-group-addon bootstrap-touchspin-postfix">%</span> 
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    
+                                                    
+                                                    <div class="col-md-3 ">
+													  <div class="form-group">
+														
+           <label>&nbsp;</label>                                             <input name="retention1ammount" type="text" class="form-control" id="retention1ammount" placeholder="Monto" value="<?php echo $rowpconfirm['ret1a']; ?>" readonly>
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>                                                 
+                                                    <div class="col-md-3 ">
+													  <div class="form-group">
+														<label>IR (NIO C$):</label>
+                                                        <input type="hidden" name="retention2" id="retention2" value="<?php echo $rowpconfirm['ret2']; ?>"><input readonly name="retention2view" type="text" class="form-control" id="retention2view" value="<?php if($rowpconfirm['ret2'] != 0){ echo $rowpconfirm['ret2']; } ?>" placeholder="%" onKeyUp="javascript:reloadNumbers();" onkeypress="return justNumbers(event);"><span class="input-group-addon bootstrap-touchspin-postfix">%</span> 
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    <div class="col-md-3 ">
+													  <div class="form-group">
+			    <label>&nbsp;</label>											
+                                                        <input name="retention2ammount" type="text" class="form-control" id="retention2ammount" placeholder="Monto" value="<?php echo $rowpconfirm['ret2a']; ?>" readonly> 
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+													</div>
+                                                    
+
+													<!--/span-->
+
+												</div>
+                                                 <div class="row" style="display:none;">
+                                                 
+<div class="col-md-3 ">												  <div class="form-group">No retenedor/Exento
+													    <label>:</label>
+                                                        <input name="retainer" type="checkbox" id="retainer" onChange="javascript:reloadNumbers();" value="1" <?php if($rowpconfirm['retainer'] == 1) echo 'checked'; ?> readonly> 
+                                                         
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+</div>
+<div class="col-md-3 ">												  <div class="form-group">Asume GCP (IMI).
+													    <label>:</label>
+                                                        <input name="retainer2" type="checkbox" id="retainer2" onChange="javascript:reloadNumbers();" value="1" <?php if($rowpconfirm['acp'] == 1) echo 'checked'; ?> readonly> 
+                                                         
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+</div>
+<div class="col-md-3 ">												  <div class="form-group">Asume GCP (IR).
+						    <label>:</label>
+                                                        <input name="retainer3" type="checkbox" id="retainer3" onChange="javascript:reloadNumbers();" value="1" <?php if($rowpconfirm['acp2'] == 1) echo 'checked'; ?> > 
+                                                         
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+</div>                                              </div>
+ <div class="row">
+                                                 
+<div class="col-md-3 ">												  <div class="form-group">No retenedor/Exento
+						    <label>:</label>
+                                                        <input name="retainerdis" type="checkbox" id="retainerdis" onChange="javascript:reloadNumbers();" value="1" <?php if($rowpconfirm['retainer'] == 1) echo 'checked'; ?> readonly disabled> 
+                                                         
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+</div>
+<div class="col-md-3 ">												  <div class="form-group">Asume GCP (IMI).
+						    <label>:</label>
+                                                        <input name="retainer2dis" type="checkbox" id="retainer2dis" onChange="javascript:reloadNumbers();" value="1" <?php if($rowpconfirm['acp'] == 1) echo 'checked'; ?> readonly disabled> 
+                                                         
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+</div>
+<div class="col-md-3 ">												  <div class="form-group">Asume GCP (IR).
+						    <label>:</label>
+                                                        <input name="retainer3dis" type="checkbox" id="retainer3dis" onChange="javascript:reloadNumbers();" value="1" <?php if($rowpconfirm['acp2'] == 1) echo 'checked'; ?> disabled> 
+                                                         
+						
+                                                          
+                       <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+</div>                                              </div>
+                                                
+                                                  <h3 class="form-section">Pago a Proveedor</h3>
+                                                  
+                                              <div class="row"><!--/span-->
+                                                <div class="col-md-3 "> 
+													  <div class="form-group">
+			    <label>Monto a Pagar</label>  
+			    :											
+                                                        <input name="payment" type="text" class="form-control" id="payment" value="" readonly>	
+														
+ 						
+                                                          
+                                                        <input type="hidden" name="floatpayment" id="floatpayment">
+                                                        <input type="hidden" name="floatpaymentnio" id="floatpaymentnio">
+                                                        <input type="hidden" name="floatammount2" id="floatammount2">
+                                                        <input type="hidden" name="floatcurrency" id="floatcurrency">
+                                                        <br>
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        <div class="row"></div>
+                                                      <!--/row--></div>
+												</div> 
+                                                
+      <div class="col-md-3 "> 
+													  <div class="form-group">
+			    <label>Moneda a Pagar</label><input type="hidden" name="nochange" id="nochange" value="1" >                                              
+ <select name="currency2pay" class="form-control" id="currency2pay" onChange="javascript:reloadNumbers();"> 
+<option value="1" <? if($rowpconfirm['currency'] == 1) echo 'selected'; ?>>Córdobas</option> 
+<option value="2" <? if($rowpconfirm['currency'] == 2) echo 'selected'; ?>>Dólares</option>  
+</select>
+</div>
+</div>
+                                                  </div>
+                                                  
+                                                       <h3 class="form-section"><a id="files"></a>Archivos </h3>
+                                                  
+                                                  <div class="row"><!--/span--> 
+                                                  
+                                                  <div id="emails">
+                                                    <?php 
+													
+	$queryfile2 = "select * from files where payment = '$rowpconfirm[id]' order by id asc";  
+	$resultfile2 = mysqli_query($con, $queryfile2);
+	$filecount = 0;
+	while($rowfile2 = mysqli_fetch_array($resultfile2)){
+	$filecount++;
+	if($filecount > 1){
+		
+	?>
+                                                     <div class="col-md-10 ">
+													  <div class="form-group">
+	<input type="hidden" name="fileid[]" id="fileid[]" value="<?php echo $rowfile2['id']; ?>">
+    
+    <?php 
+
+$thisfile = cleanLink($rowfile2['link']);
+$queryfbox = "select * from filebox where user = '$rowpconfirm[userid]' order by id desc";
+$resultfbox = mysqli_query($con, $queryfbox);
+$rowfbox=mysqli_fetch_array($resultfbox);
+
+
+
+?>
+
+<input type="hidden" id="file[]" name="file[]" value="<?php echo 'http://getpay.casapellas.com.ni/admin/visor.php?key='.$rowfbox['url'];  ?>">
+
+ <input name="file_show[]" type="text" class="form-control" id="file_show" value="<?php echo $rowfbox['id']." | ".$rowfbox['title']; ?>" readonly>	
+
+ 
+  
+                                            
+                                            
+<div class="row"></div></div></div> 
+                                                        
+<?php 
+//End while
+
+}
+//End if
+}
+ 
+?>
+                                                
+                                                      
+                                                    </div>
+                       
+                                                     
+                                   
+                                              </div>
+                                              
+                                              
+                                         
+                                              
+                                              
+   <div id="dbeneficiarie" style="display:none;">                                              
+  <h3 class="form-section"><a id="beneficiaries"></a>Beneficiarios</h3>
+  
+  <div class="row">
+  <div class="col-md-4">
+
+													  <div class="form-group">
+
+														<label class="control-label">Lista de Beneficiarios:</label>
+
+															<select name="beneficiarie" class="form-control" id="beneficiarie">
+<option value="0" selected>Seleccionar Proveedor</option>
+															</select>
+
+													  </div>
+
+													</div>
+                                                    </div>
+</div>
+
+
+<h3  class="form-section">Distribucion del pago</h3> 
+<div class="row">
+
+<div class="col-md-4">
+
+													  <div class="form-group">
+
+														<label class="control-label">Distribuir pago?</label>
+                                                        
+                                                        <input type="hidden" name="distributable" id="distributable" value="<?php echo $rowpconfirm['distributable']; ?>">  <input name="showdistrib" type="text" class="form-control" id="showdistrib" value="<?php switch($rowpconfirm['distributable']){
+															case 0:
+															echo "No";
+															break;
+															case 1:
+															echo "Si";
+															break;
+														}
+													?>" readonly>  
+                                                        
+                                                        
+                                                        
+<?php /*
+															<select name="distributable" class="form-control" id="distributable" onChange="javascript:makeDistributable(this.value);">
+<option value="0" selected>No</option>
+<option value="1" <?php if($rowpconfirm['distributable'] == 1) echo 'selected'?>>Si</option> 
+															</select>
+                                                            
+<script>
+function makeDistributable(dvalue){
+	if(dvalue == 1){
+		document.getElementById('ddistribucion3').style.display = 'block';
+	}else{
+		document.getElementById('ddistribucion3').style.display = 'none';
+	}
+}
+	
+</script>
+
+*/ ?>
+													  </div>
+
+													</div>
+                                                 
+</div>
+<div id="ddistribucion3" <?php if($rowpconfirm['distributable'] == 0){ ?>style="display:none;" <?php } ?>><br>
+<div class="row" style="display:none;">
+<div class="col-md-6 ">
+&nbsp;
+</div>
+                                                   
+<div class="col-md-2 " ><input type="radio" name="pertot" id="pertot" value="1" checked="" onChange="changePertot(this.value);">
+</div>
+<div class="col-md-2 "><input type="radio" name="pertot" id="pertot" value="2" onChange="changePertot(this.value);">
+</div>
+</div> 
+<?php 
+
+$querydistributable0 = "select * from distribution where payment = '$rowpconfirm[id]'";
+$resultdistributable0 = mysqli_query($con, $querydistributable0);
+$numdistributable0=mysqli_num_rows($resultdistributable0);
+	
+if(($rowpconfirm['distributable'] == 1) and ($numdistributable0 > 0)){  ?>
+<div class="row" id="distribution<?php echo $distributioni; ?>">
+
+<div class="col-md-6 ">
+						    <div class="form-group">
+														<label>Unidad:</label>
+                                                       
+						
+           </div>
+													</div>
+                                                    
+                                                    <div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Porcentaje:</label>
+                                                                                                                
+				
+             </div>
+													</div> 
+                                                    <div class="col-md-2 ">
+													  <div class="form-group"> 
+														<label>Total:</label>
+                                                   
+						
+                                                          
+               </div>
+													</div> 
+                                                   <div class="col-md-2 "> 
+                                                    <div class="form-group">
+                                                   		<label>&nbsp;</label><br>
+                                         </div>
+                                                        </div>
+                                                        
+     
+                                                  
+</div>
+<?php
+
+$querydistributable = "select * from distribution where payment = '$rowpconfirm[id]'";
+$resultdistributable = mysqli_query($con, $querydistributable);
+$distributioni = 1;
+while($rowdistributable=mysqli_fetch_array($resultdistributable)){
+
+?>
+<div class="row" id="distribution<?php echo $distributioni; ?>">
+<?php //UNIT ?>
+<div class="col-md-6 ">
+						    <div class="form-group">
+														
+
+<?php
+
+$queryproviders = "select * from units where code = '$rowdistributable[unit]'";
+$resultproviders = mysqli_query($con, $queryproviders);
+$rowproviders=mysqli_fetch_array($resultproviders);
+
+?>
+<input type="hidden" name="dunit[]" id="dunit[]" value="<?php echo $rowdistributable['unit']; ?>">
+<input name="dunitview[]" type="text" class="form-control" id="dunitview[]" value="<?php echo $rowproviders['code']." | ".$rowproviders['name']; ?>" readonly>  
+                                                    
+                                                   
+<?php
+
+/*                                                       <select name="dunit[]" class="form-control  select2me" id="dunit[]" data-placeholder="Seleccionar..."> 
+                                           
+
+							    <option value=""></option>
+<?php 
+$queryproviders = "select * from units";
+$resultproviders = mysqli_query($con, $queryproviders);
+while($rowproviders=mysqli_fetch_array($resultproviders)){
+?>
+												<option value="<?php echo $rowproviders['code']; ?>"<?php if($rowdistributable['unit'] == $rowproviders['code']) echo 'selected'; ?>><?php echo $rowproviders['code']." | ".$rowproviders['name']; ?></option>
+                                                <?php } ?>
+
+												
+
+											</select>
+*/ ?>
+						
+           </div>
+						  </div>
+<?php //PERCENT ?>                                                    <div class="col-md-2 ">
+													  <div class="form-group">
+														
+                                                        <input name="dpercent[]" type="text" class="form-control" id="dpercent[]" value="<?php echo $rowdistributable['percent']; ?>" onkeypress="return justNumbers(event);" onKeyUp="calculateTheTotal(1);" readonly>                                                        
+	
+             </div>
+													</div> 
+<?php //Total ?>                                                    <div class="col-md-2 ">
+													  <div class="form-group">
+														
+                                                        <input name="dtotal[]" type="text" class="form-control" id="dtotal[]" value="<?php echo $rowdistributable['total']; ?>"readonly onkeypress="return justNumbers(event);" onKeyUp="calculateTheTotal(2);"> 
+                                                        
+						
+                                                          
+               </div>
+													</div> 
+<?php //Delete Distribution ?>
+<div class="col-md-2 "> 
+                                                    <div class="form-group" style="display:none;">
+                                                   		<label>&nbsp;</label>
+                                                        <button type="button" class="btn red" onClick="javascript:deleteRow(<?php echo $distributioni; ?>);">-</button>  </div>
+                                                        </div>
+                                                        
+<input type="hidden" name="did[]" id="did[]" value="<?php echo $rowdistributable['id']; ?>">      
+                                                  
+</div>
+
+<?php $distributioni++; } ?>
+
+<?php }else{ ?>
+						<div class="row">
+ <script>
+function changePertot(onoff){
+	i=0; 
+		for (var obj in document.getElementsByName('percent[]')){
+ 		if (i<document.getElementsByName('percent[]').length){
+			
+	if(onoff == 2){
+	
+		document.getElementsByName('percent[]')[i].readOnly = true;
+		document.getElementsByName('total[]')[i].readOnly = false;
+	}
+	if(onoff == 1){
+		
+		document.getElementsByName('total[]')[i].readOnly = true;
+		document.getElementsByName('percent[]')[i].readOnly = false;
+	}
+		}
+		i++;
+		}
+}
+</script>
+ <?php $account = "";
+ 
+ if($rowconcept2['account'] != ""){
+		$account = $rowconcept2['account'];
+	}else{
+		if($rowconcept['account'] != ""){
+			$account = $rowconcept['account'];
+		}else{
+			if($rowtype['account'] != ""){
+				$account = $rowtype['account'];
+			}
+		}
+	}
+														?>
+                                                        
+<?php //UNIT ?>
+<div class="col-md-6 ">
+													  <div class="form-group">
+														<label>Unidad:</label>
+                                                       <select name="dunit[]" class="form-control  select2me" id="dunit[]" data-placeholder="Seleccionar..."> 
+                                           
+
+											  <option value=""></option>
+<?php $queryproviders = "select * from units";
+$resultproviders = mysqli_query($con, $queryproviders);
+while($rowproviders=mysqli_fetch_array($resultproviders)){
+?>
+												<option value="<?php echo $rowproviders['code']; ?>"<?php if($rowpconfirm['provider'] == $rowproviders['id']) echo 'selected'; ?>><?php echo $rowproviders['code']." | ".$rowproviders['name']; ?></option>
+                                                <?php } ?>
+
+												
+
+											</select>
+						
+           </div>
+													</div>
+<?php //PERCENT ?>                                                    <div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Porcentaje:</label>
+                                                        <input name="dpercent[]" type="text" class="form-control" id="dpercent[]" value="" readonly>                                                        
+		
+             </div>
+													</div> 
+<?php //TOTAL ?>
+<div class="col-md-2 ">
+													  <div class="form-group">
+														<label>Total:</label>
+                                                        <input name="dtotal[]" type="text" class="form-control" id="dtotal[]" value="" readonly onkeypress="return justNumbers(event);" onKeyUp="calculateTheTotal(2)"> 
+						
+                                                          
+               </div>
+													</div> 
+<?php //DELETE ?>                                                   <div class="col-md-2 "> 
+                                                    <div class="form-group">
+                                                   		<label>&nbsp;</label><br>
+                                                        <button type="button" class="btn red" onClick="javascript:deleteRow(1);">-</button>  </div>
+                                                        </div>
+
+<input type="hidden" name="did[]" id="did[]" value="0"> 
+</div>
+<?php } ?>               
+                                                    <div id="distributionwaiter">
+                                                    </div>
+<div class="col-md-1 " style="display:none;">
+<button type="button" class="btn blue" onClick="addDistribution();">+</button>
+ <br><br>&nbsp;
+ </div>                                          
+        </div>
+
+<br>
+<?php //END OF DISTRIBUTION ?>
+<div class="row"></div>
+<div style="display:none;">
+
+<?php 
+
+$queryroutes = "select routes.* from routes inner join usertype on routes.type = usertype.id where routes.worker = '$rowpconfirm[userid]' and routes.type = 1 order by routes.unit";
+//group by routes.unit
+$resultroutes = mysqli_query($con, $queryroutes);
+$numroutes = mysqli_num_rows($resultroutes);
+
+
+
+if($numroutes == 1){
+	$rowroutes = mysqli_fetch_array($resultroutes);
+	if(strlen($rowroutes['unit']) == 2){
+		$queryrname = "select * from units where code2 = '$rowroutes[unit]'";
+		$resultrname = mysqli_query($con, $queryrname);
+		while($rowrname = mysqli_fetch_array($resultrname)){
+		$thename.=$rowrname['name'];
+		$thecode = $rowrname['code2'];
+		}
+		
+	}else{
+	
+	$queryrname = "select * from units where code = '$rowroutes[unit]'";
+	$resultrname = mysqli_query($con, $queryrname);
+	$rowrname = mysqli_fetch_array($resultrname);
+	$thename = $rowrname['name'];
+	$thecode = $rowrname['code'];
+	}
+	
+	if($rowroutes['headship'] > 0){
+		$queryheadship = "select * from headship where id = '$rowroutes[headship]'";
+	$resultheadship = mysqli_query($con, $queryheadship);
+	$rowheadship = mysqli_fetch_array($resultheadship);
+	}
+	
+	
+	//
+	?> 
+
+  <h3 class="form-section"><a id="route"></a>Ruta de pago</h3> 
+  <p><?php echo $thecode." | ".$thename; if($rowroutes['headship'] > 0){ echo ' > '.$rowheadship['name']; } ?></p>
+   <div class="row">
+   <div class="col-md-12" id="routeFill" onLoad="javascript:reloadRouteView();"> 
+   </div>
+   <input name="theroute" type="hidden" id="theroute" value="<?php echo $thecode; ?>,<?php echo $rowroutes['headship']; ?>">  
+    </div>
+	<?php
+}
+elseif($numroutes > 1){
+	
+
+?>
+	
+  <h3 class="form-section"><a id="route"></a>Ruta de pago</h3>
+  
+  
+<div class="row" style=" display:none;">
+ 
+   
+   
+  <div class="col-md-4">
+ 
+
+													  <div class="form-group">
+
+														<label class="control-label">Lista de Rutas:</label>  
+
+	     <input name="viewrouter" type="text" class="form-control" id="viewrouter" value="" readonly>	
+														
+    
+    <div style="display:none;">														<select name="theroute" class="form-control" id="theroute" onchange="javascript:reloadRouteView();"> 
+                                                  
+<option value="0" selected>Seleccionar</option> 
+<?php while($rowroutes=mysqli_fetch_array($resultroutes)){ 
+	
+	if(strlen($rowroutes['unit']) == 2){
+		$queryrname = "select * from units where code2 = '$rowroutes[unit]'";
+		$resultrname = mysqli_query($con, $queryrname);
+	while($rowrname = mysqli_fetch_array($resultrname)){
+		$thename.=$rowrname['name'];
+		$thecode = $rowrname['code2'];
+	}
+		
+	}else{
+	
+	$queryrname = "select * from units where code = '$rowroutes[unit]'";
+	$resultrname = mysqli_query($con, $queryrname);
+	$rowrname = mysqli_fetch_array($resultrname);
+	$thename = $rowrname['name'];
+	$thecode = $rowrname['code'];
+	}
+	
+	if($rowroutes['headship'] > 0){
+		$queryheadship = "select * from headship where id = '$rowroutes[headship]'";
+	$resultheadship = mysqli_query($con, $queryheadship);
+	$rowheadship = mysqli_fetch_array($resultheadship);
+	}
+	
+?>
+<option value="<?php echo $thecode; ?>,<?php echo $rowroutes['headship']; ?>" class="<?php echo $rowpconfirm['route']; ?>" <?php if($thecode == $rowpconfirm['route']) echo 'selected'; ?>><?php echo $thecode." | ".$thename; if($rowroutes['headship'] > 0){ echo ' > '.$rowheadship['name']; } ?></option>
+<?php } ?>
+															</select>
+                                                            </div>
+
+													  </div>
+
+												
+                                                    
+ 
+<br>
+
+												
+
+													</div>
+                                             
+                                                    
+                                                    
+  <div class="col-md-8" id="routeFill">
+  
+  
+  </div>
+   
+                                                
+                                                    
+                                                    </div>
+                                                    
+                                                 
+                                                 
+  
+                                                    
+                                                
+<?php } ?>   
+</div>
+
+                                                       										<!--/row--><!--/row--></div>
+                                                                                            <div id="row"><div class="col-md-12 ">
+													  <div class="form-group">
+														<label>Notas del Solicitante:</label>
+                                                        <textarea name="notes" rows="2" class="form-control" id="notes" readonly><?php echo $rowpconfirm['notes']; ?></textarea>
+	
+                                                          
+                      
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        
+                                                      <!--/row--></div>
+													</div></div>
+                                                    <div id="row"><div class="col-md-12 ">
+													  <div class="form-group">
+														<label>Notas de reparación de solicitud:</label>
+                                                        <textarea name="notesrep" rows="2" class="form-control" id="notes"></textarea>
+	
+                                                          
+                      
+
+                       <!--/row-->
+                                                          <!--/row-->
+                                                          <!--/row-->
+                                                        
+                                                      <!--/row--></div>
+													</div></div> 
+
+<br><br><br><br><br>
+											<div class="form-actions right" style=" margin-top:100px;">
+
+												<button type="button" class="btn default" onClick="javascript:cancelAction();"><i class="fa fa-undo"></i> Retornar</button>
+
+										 <?php /*<button name="draft" id="draft" type="button" class="btn blue" onClick="javascript:saveDraft();"><i class="fa fa-save"></i> Guardar Borrador</button>*/ ?> 
+                                              <button type="submit" class="btn blue" name="save" id="save"><i class="fa fa-check"></i> Reparar</button>
+											    <input name="newbutton" type="hidden" id="newbutton" value="save">
+											    <input type="hidden" name="id" id="id" value="<?php echo $rowpconfirm['id']; ?>">
+											    <span class="form-actions right" style=" margin-top:100px;">
+											    <input type="hidden" name="cut" id="cut" value="<?php echo $rowpconfirm['cut']; ?>">
+											    </span>
+											</div>
+
+										</form>
+
+										<!-- END FORM-->
+
+									</div>
+
+								</div>
+
+							</div>
+
+							
+
+			<script>
+			function saveDraft(){
+			document.getElementById('newbutton').value = "draft"; 
+			document.forms['porder'].submit();
+			}
+			
+			</script>
+					</div>
+
+				</div>
+
+			</div>
+
+			<!-- END PAGE CONTENT-->
+
+		</div>
+
+	</div>
+
+	<!-- END CONTENT -->
+
+	<!-- BEGIN QUICK SIDEBAR -->
+
+<?php include("sidebar.php"); ?>
+
+<!-- END QUICK SIDEBAR -->
+
+</div>
+
+<!-- END CONTAINER -->
+
+<!-- BEGIN FOOTER -->
+
+<?php include("footer.php"); ?>
+
+<!-- END FOOTER -->
+
+<!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
+
+<!-- BEGIN CORE PLUGINS -->
+<script src="../assets/global/plugins/jquery-1.11.0.min.js" type="text/javascript"></script>
+
+<script src="../assets/global/plugins/jquery-migrate-1.2.1.min.js" type="text/javascript"></script>
+
+<!-- IMPORTANT! Load jquery-ui-1.10.3.custom.min.js before bootstrap.min.js to fix bootstrap tooltip conflict with jquery ui tooltip -->
+
+<script src="../assets/global/plugins/jquery-ui/jquery-ui-1.10.3.custom.min.js" type="text/javascript"></script>
+
+<script src="../assets/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+
+<script src="../assets/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" type="text/javascript"></script>
+
+<script src="../assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+
+<script src="../assets/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>
+
+<script src="../assets/global/plugins/jquery.cokie.min.js" type="text/javascript"></script>
+
+<?php /*<script src="../assets/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>*/ ?> 
+
+
+<!-- END CORE PLUGINS -->
+
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+<!-- END PAGE LEVEL SCRIPTS -->
+
+<script src="../assets/global/scripts/metronic.js" type="text/javascript"></script>
+
+<script src="../assets/admin/layout/scripts/layout.js" type="text/javascript"></script>
+
+<script src="../assets/admin/layout/scripts/quick-sidebar.js" type="text/javascript"></script>
+<script type="text/javascript" src="../assets/global/plugins/select2/select2.min.js"></script>
+
+<script src="../assets/admin/pages/scripts/components-pickers.js"></script>
+<script type="text/javascript" src="../assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+
+
+<script src="../assets/admin/pages/scripts/table-managed.js"></script>
+
+<script>
+jQuery(document).ready(function() {    
+Metronic.init(); // init metronic core components
+Layout.init(); // init current layout
+QuickSidebar.init() // init quick sidebar
+ComponentsPickers.init();
+TableManaged.init();
+});
+</script>
+
+    
+<script type="text/javascript"> 
+
+
+function reloadsconcept(nid,i){		
+	$.post("reload-sconcepts.php", { variable: nid }, function(data){ 
+	
+	 document.getElementById("concept_"+i).innerHTML = data;
+	});
+	reloadsconcept2(0,i);
+}
+
+function reloadsconcept2(nid,i){		
+	$.post("reload-sconcepts2.php", { variable: nid }, function(data){ 
+	
+	 document.getElementById("concept2_"+i).innerHTML = data;
+	});
+	
+}
+
+
+
+function help1(){
+	alert('Si el monto no coinside con la cantidad en letras utilize esta opción.');
+}
+
+
+function cancelAction(){
+	if (confirm("Esta Seguro de cancelar este ingreso?\n")==true){
+			window.location = 'payments.php';
+		}
+}
+
+	function justNumbers(e)
+        {
+        var keynum = window.event ? window.event.keyCode : e.which;
+        if ((keynum == 8) || (keynum == 46))
+        return true;
+         
+        return /\d/.test(String.fromCharCode(keynum));
+        }
+
+
+
+
+function commas(unformatedAmmount) {
+    
+	var floatAmmount = parseFloat(unformatedAmmount);
+	var floatAmmount2 = floatAmmount.toFixed(2); 
+	
+	var parts = floatAmmount2.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    
+	var parts2 = parts.join(".");
+	return parts2;  
+}
+
+function numberFormat(unformatedNumber){
+	var formatednumber = unformatedNumber.replace(',','');
+	return formatednumber; 
+}
+
+function clear1(){
+	document.getElementById("retention1").value = ""; 
+}
+function clear2(){
+	document.getElementById("retention2").value = "";
+}
+
+
+
+function deleteRow(id){
+	//document.getElementById("distribution"+id).style.display = 'none';
+	var node = document.getElementById("distribution"+id);
+if (node.parentNode) {
+  node.parentNode.removeChild(node);
+}
+}
+
+
+function numberFormat(unformatedNumber){
+	var formatednumber = unformatedNumber.replace(',','');
+	return formatednumber; 
+}
+
+
+function validateForm(){ 
+
+reloadNumbers();
+	
+	var provider = document.getElementById("provider").value;
+	var recipient = document.getElementById("dspayment").value; 
+	var collaborator = document.getElementById("collaborator").value; 
+
+if(recipient == 0){
+	document.getElementById("dspayment").focus(); 
+	alert('Usted debe de seleccionar el tipo de beneficiario.');
+	return false;
+}
+if(recipient == 1){ 
+
+	if(provider == 0){
+		document.getElementById("provider").focus();
+		alert('Usted debe de seleccionar un proveedor.');
+		return false;
+	} 
+
+}
+if(recipient == 2){
+	
+	if(collaborator == 0){
+		document.getElementById("collaborator").focus();
+		alert('Usted debe de seleccionar un colaborador.');
+		return false;
+	} 
+	
+}
+		
+		var description = document.getElementById("description").value;
+		if(description == ""){
+		document.getElementById("description").focus();
+		alert('Usted debe de ingresar una descripcion del pago.');
+		return false;
+		}
+	
+		i=0;
+		for (var obj in document.getElementsByName('type[]')){
+ 		if (i<document.getElementsByName('type[]').length){
+		currenttype =  document.getElementsByName('type[]')[i].value;
+		
+		if(currenttype == 0){
+			document.getElementsByName('type[]')[i].focus();
+			alert('Usted debe de seleccionar un tipo de pago.');
+			return false;
+		}
+		//
+		currentconcept =  document.getElementsByName('concept[]')[i].value;
+		if(currentconcept == 0){
+			document.getElementsByName('concept[]')[i].focus();
+			alert('Usted debe de seleccionar un concepto de pago.');
+			return false;
+		}
+		
+		//
+		currentconcept2 =  document.getElementsByName('concept2[]')[i].value;
+		if(currentconcept2 == 0){
+			//document.getElementsByName('concept2[]')[i].focus();
+			//alert('Usted debe de seleccionar una categoria de pago.');
+			//return false; 
+		}
+}
+i++;
+}
+ 
+		
+		i=0;
+		for (var obj in document.getElementsByName('bill[]')){
+ 		if (i<document.getElementsByName('ammount[]').length){
+		cbill =  document.getElementsByName('bill[]')[i].value;
+		
+		if(recipient == 1){
+			if(cbill == ""){
+				document.getElementsByName('bill[]')[i].focus();
+				alert('Usted debe de ingresar el numero de Documento.');
+				return false;
+			}
+		}
+		
+		cammount =  document.getElementsByName('ammount[]')[i].value;
+		if(cammount == ""){
+			document.getElementsByName('ammount[]')[i].focus();
+			alert('Usted debe de ingresar el monto de cada Documento.');
+			return false;
+		}
+
+		cbilldate =  document.getElementsByName('billdate[]')[i].value;
+		//Aca necesito la funcion 
+		currentconceopt = document.getElementsByName('concept[]')[i].value;
+		
+		if((cbilldate == "") && (currentconcept != 216)){
+			document.getElementsByName('billdate[]')[i].focus();
+			alert('Usted debe de ingresar la fecha de cada Documento.');
+			return false;
+		}
+
+
+		if(cammount == 0){
+			alert('El monto del Documento no puede ser cero.');
+			return false;
+		}
+	}
+	
+	i++;
+}
+
+		
+		var totalbill = document.getElementById("totalbill").value;
+	if(totalbill == 0){
+		alert('Usted debe de ingresar un monto.');
+		return false;
+		}
+		var currency = document.getElementById("currency").value;
+	if(currency == 0){
+		alert('Usted debe de seleccionar una moneda.');
+		return false;
+		}
+		
+		
+		var payment = document.getElementById("payment").value;
+	if(payment <= 0){
+		alert('No se puede agregar un pago con un monto de 0.00.');
+		return false;
+		}
+		
+		//Aqui agregamos una orden que no permita pagar pagos menores que 1001 cordobas 
+		var floatpaymentnio = document.getElementById("floatpaymentnio").value;
+		/*if((currency <= 2) && (floatpaymentnio < 1001)){
+			alert('La solicitu de pago debe de ser mayor a 1001 cordobas o su equivalente en otra moneda.'); 
+			return false;
+		}*/ 
+		
+		var retention1 = document.getElementById("retention1").value;
+	if(retention1 == ""){
+		alert('Ingrese el valor cero si no hay retencion de Alcaldia.');
+		return false;
+		}
+		
+		var retention2 = document.getElementById("retention2").value;
+	if(retention2 == ""){
+		alert('Ingrese el valor cero si no hay retencion de IR');
+		return false;
+		} 
+		
+	var i=0;
+	var i2=0;
+	var i3=0; 
+		for (var obj in document.getElementsByName('file[]')){
+ 		if (i<document.getElementsByName('file[]').length){
+		file =  document.getElementsByName('file[]')[i].value;
+		
+		
+		if(!/visor.php/.test(file)){
+	
+		}else{
+			var i2=i2+1;
+		}
+		
+		
+	}
+	
+	i++;
+}
+if(i2 == 0){
+	alert('Usted debe proporcionar al menos un archivo en cada solicitud.');
+	return false;
+}
+
+		var distributable = document.getElementById('distributable').value;
+		var tpercent = 0;
+		var tptotal = 0;
+		if(distributable == 1){
+			i=0; 
+			for (var obj in document.getElementsByName('dunit[]')){
+ 			if (i<document.getElementsByName('dunit[]').length){
+		
+		
+			var vunit =  document.getElementsByName('dunit[]')[i].value;
+		
+			//Obligar el ingreso de una unidad de negocio
+			if(vunit == ''){
+				document.getElementsByName('dunit[]')[i].focus();
+				alert('Usted debe de ingresar una unidad de negocio.');
+				return false; 
+			}
+			
+			//
+			var vpercent =  document.getElementsByName('dpercent[]')[i].value;
+			var vpercentd =  document.getElementsByName('dpercent[]')[i].readOnly;
+			if(vpercentd == false){
+			if(vpercent == ''){
+			document.getElementsByName('dpercent[]')[i].focus();
+			alert('Usted debe de ingresar un porcentaje.');
+			return false; 
+			}
+			} //end false
+		
+		
+			//
+			var vtotal =  document.getElementsByName('dtotal[]')[i].value;
+			
+			var vtotald =  document.getElementsByName('dtotal[]')[i].readOnly;
+			if(vtotald == false){
+				if(vtotal == ''){
+				document.getElementsByName('dtotal[]')[i].focus();
+				alert('Usted debe de ingresar un monto.');
+				return false;
+			}
+			} //end flse
+		
+			var tpercent = parseFloat(tpercent)+parseFloat(vpercent);
+			tptotal+=parseFloat(vtotal);
+		
+		
+}
+i++;
+}
+
+var gstotald = document.getElementById('stotalbill').value;
+var gstotald = gstotald.replace(",", "");
+var gstotald = parseFloat(gstotald); 
+var tptotal = tptotal.toFixed(2)
+
+var tptotal_min = tptotal-1;
+var tptotal_max = tptotal+1;
+
+if((gstotald >= tptotal_min) || (gstotald <= tptotal_max)){ 
+	//Do nothing
+	
+}else{
+	var ddiference = parseFloat(gstotald)-parseFloat(tptotal);
+	var ddiference = ddiference*-1;
+	alert('La distribucion debe de ser sobre el subtotal. Se enconto una diferencia de '+ddiference)
+	return false;
+}
+
+}
+
+
+
+}
+
+function divRetention(){
+	if(document.getElementById('retainer').checked == true){
+		document.getElementById('retention1').value = 0; 	
+		document.getElementById('retention1ammount').value = 0.00;
+		document.getElementById('retention1').readOnly = true;
+		document.getElementById('retention2').value = 0;
+		document.getElementById('retention2ammount').value = 0.00;
+		document.getElementById('retention2').readOnly = true;
+		var p1 = 0;
+		var p2 = 0; 
+	}else{
+	document.getElementById('retention1').readOnly = false;
+	document.getElementById('retention2').readOnly = false;
+	
+	
+	}
+}
+
+
+function changePertot(onoff){
+	i=0; 
+		for (var obj in document.getElementsByName('dpercent[]')){
+ 		if (i<document.getElementsByName('dpercent[]').length){
+			
+	if(onoff == 2){
+	
+		document.getElementsByName('dpercent[]')[i].readOnly = true;
+		document.getElementsByName('dtotal[]')[i].readOnly = false;
+	}
+	if(onoff == 1){
+		
+		document.getElementsByName('dtotal[]')[i].readOnly = true;
+		document.getElementsByName('dpercent[]')[i].readOnly = false;
+	}
+		}
+		i++;
+		}
+}
+
+
+var distributioni = <?php if($distributioni > 0){ echo $distributioni; } else{ echo '1'; } ?>;
+
+
+function addDistribution(){
+	
+	//var account = document.getElementsByName('accounts[]')[0].value;
+	var selectoR =  document.getElementsByName('pertot');
+	
+	for (var i = 0, length = selectoR.length; i < length; i++) {
+	
+	if (selectoR[i].checked) {
+
+		if(selectoR[i].value == 1){
+			var readOnly1 = "";
+			var readOnly2 = "readonly";
+		}else{
+			var readOnly1 = "readonly";
+			var readOnly2 = "";
+		}
+}
+	
+	
+}   	 
+
+   var distributionboxadd = '<div class="row" id="distribution'+distributioni+'"><div class="col-md-6 "><select name="dunit[]" class="form-control  select2me" id="dunit[]" data-placeholder="Seleccionar..."><option value=""></option><?php $queryproviders = "select * from units";
+$resultproviders = mysqli_query($con, $queryproviders);
+while($rowproviders=mysqli_fetch_array($resultproviders)){
+?><option value="<?php echo $rowproviders['code']; ?>"<?php if($rowpconfirm['provider'] == $rowproviders['id']) echo 'selected'; ?>><?php echo $rowproviders['code']." | ".$rowproviders['name']; ?></option><?php } ?></select></div><div class="col-md-2 "><div class="form-group"><input name="dpercent[]" type="text" class="form-control" id="dpercent[]" value=""  onKeyUp="javascript:calculateTheTotal(1);" '+readOnly1+'></div></div> <div class="col-md-2 "><div class="form-group"><input name="dtotal[]" type="text" class="form-control" id="dtotal[]" value="" '+readOnly2+' onKeyUp="javascript:calculateTheTotal(2);" onkeypress="return justNumbers(event);"></div></div> <div class="col-md-2 "><div class="form-group"><label>&nbsp;</label><button type="button" class="btn red" onClick="javascript:deleteRow('+distributioni+');">-</button></div></div><input type="hidden" name="did[]" id="did[]" value="0"></div>'; 
+     distributioni++; 
+	 $("#distributionwaiter").append(distributionboxadd);  
+	 
+	 Metronic.init(); 
+	 
+	 //init metronic core components
+	
+  
+}
+ 
+
+</script>
+<script>
+	
+	function calculateTheTotal(mySelector,myOutput){ 
+	
+	
+	var mytotalstotal = numberFormat(document.getElementById('stotalbill').value);		
+
+	if(mySelector == 1){
+		i=0;
+		for (var obj in document.getElementsByName('dpercent[]')){
+			if (i<document.getElementsByName('dpercent[]').length){
+				thepercent = document.getElementsByName('dpercent[]')[i].value;
+				thetotal1 = thepercent/100;
+				var thetotal = parseFloat(mytotalstotal)*parseFloat(thetotal1);
+				document.getElementsByName('dtotal[]')[i].value = thetotal.toFixed(2); 
+				document.getElementsByName('dtotal[]')[i].value = thetotal;   
+			} 
+			i++;
+		    var thetotalpercent = parseFloat(thetotalpercent)+parseFloat(thepercent);	
+		}
+		if(thetotalpercent > 100){
+			alert('La distribucion no puede ser mayor a 100%.');
+		}
+	}
+		
+	if(mySelector == 2){
+		i=0;
+		for (var obj in document.getElementsByName('dpercent[]')){
+			if (i<document.getElementsByName('dpercent[]').length){
+				theammount = document.getElementsByName('dtotal[]')[i].value;
+				
+				var thepercent1 = theammount*100;
+				var thepercent = thepercent1/mytotalstotal;
+				var thepercentround = Math.round(thepercent * 100) / 100; 
+				document.getElementsByName('dpercent[]')[i].value = thepercentround;
+			}
+  			i++;
+		}
+}
+			
+}
+			
+</script>
+
+<?php include('fn-reloadnumbers.php'); ?>
+
+<!-- END JAVASCRIPTS -->
+
+</body>
+
+<!-- END BODY -->
+
+</html>
+ <script type="application/javascript">
+  
+  function reloadRouteView(){
+	
+	var myroute = document.getElementById('theroute').value; 
+   $.post("reload-route.php", { myvariable: myroute, }, function(data){
+	
+  //alert(data); 
+  document.getElementById('routeFill').innerHTML = data;
+   
+}); 
+} 
+  </script>
+  
+<?php
+
+function cleanLink($dirtyurl){ 
+
+	$levels = explode('/', $dirtyurl);
+	$levelsize = sizeof($levels);
+	$levelsize = $levelsize-1;
+	$cleanurl = $levels[$levelsize];
+	$cleanurl = str_replace('visor.php?key=','',$cleanurl);
+	
+	return $cleanurl;
+}
+
+?>

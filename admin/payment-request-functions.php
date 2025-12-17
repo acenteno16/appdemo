@@ -1,0 +1,639 @@
+<?php 
+
+include_once('sessions.php');
+	
+$queryglobals = "select * from config";
+$resultglobals = mysqli_query($con, $queryglobals);
+$rowglobals = mysqli_fetch_array($resultglobals);
+
+?>
+
+<script>
+	
+function reloadNumbers(){  	
+	
+	validateFirst();
+	loadcurrency2pay();
+	
+	var todayDateCreate = new Date();
+	var todayDate = Date.parse(todayDateCreate);
+	var dspayment = document.getElementById('dspayment').value;
+	var provider = document.getElementById('provider').value;
+	var nochange = document.getElementById('nochange').value;
+	
+	var cut = <?php echo $rowglobals['cut']; ?>;
+	document.getElementById('cut').value = cut; 
+	
+	divRetention(); 
+	
+	var tc = 0;
+	var stotal = 0;
+	var stotal2 = 0;
+	var sstotal = 0;
+	var tax = 0;
+	var intur = 0;
+	var intur2 = 0;
+	var totalbill = 0;
+	var totalbillnio = 0;
+	var tc = 0;
+	var stotalbill = 0;
+	var stotalbillnio = 0;
+	var exempt = 0;
+	var exempt2 = 0;
+	var stotalbillnio2 = 0;
+	var ir = 0;
+	var imi = 0;
+	var ira = 0
+	var imia = 0;
+	var totalret = 0;
+	var totalpaynio = 0;
+	var totalpay = 0;
+	var nioexempt = 0;
+	
+	//Globals
+	var gtax = 0;
+	var gstotalbill = 0;
+	var gintur2 = 0;
+	var gtotalbill = 0;
+	var gexempt = 0;
+	var gexempt2 = 0;
+	var gtotalbill = 0;
+	var gp1ammount = 0;
+	var gp2ammount = 0;
+	var gtotalretimi = 0;
+	var gtotalretir = 0;
+	var gtotalretimiusd = 0;
+	var gtotalretirusd = 0;
+	var gtotalretusd = 0;
+	var gtotalbillnio = 0;
+	
+	var gp1acp = 0;
+	var gp2acp = 0;
+	
+	var currency = document.getElementsByName('currency');
+		
+	for (var i = 0, length = currency.length; i < length; i++) {
+    	if (currency[i].checked) {
+    		var billcurrency = currency[i].value;
+		}
+	} 
+	if(!billcurrency){
+		var billcurrency = 1;	
+	}
+	if(!billcurrency){
+		//var billcurrency = document.getElementById("billcurrency2").value;
+		var billcurrency = document.getElementById("provisionbillcurrency").value;	
+	}
+	
+	//Moneda en que se va a pagar independiente de la moneda de la factura
+	var currency2pay = document.getElementById('currency2pay').value;
+
+	
+	//Constante de IVA (Desde el modulo de configuracion)
+	var giva = <?php echo ($rowglobals['iva']/100); ?>;
+	//Constante de INTUR desde el modulo de configuración
+	var gintur = <?php echo ($rowglobals['intur']/100); ?>;
+	
+	//porcentaje de retencion de Alcaldia
+	var p1 = document.getElementById("retention1").value;
+	//porcentaj ede retencion de IR
+	var p2 = document.getElementById("retention2").value; 
+
+    //Aca tenemos el cliclo por factura
+    for (var i = 0; i < document.getElementsByName('stotal[]').length; i++) {
+        var billdate = leadingZero(document.getElementsByName('billdate[]')[i].value);
+        billdate = billdate.split("-").reverse().join("-");
+        var thisBilldate = billdate;
+        billdate = Date.parse(billdate); 
+
+        if(billdate > todayDate){
+            document.getElementsByName('billdate[]')[i].value = "";
+            alert('La fecha del documento no puede ser mayor a la fecha del dia del ingreso de la solicitud.');
+            document.getElementsByName('billdate[]')[i].focus(); 
+        } 
+   
+        var billdate2 = leadingZero(document.getElementsByName('billdate2[]')[i].value);
+        billdate2 = billdate2.split("-").reverse().join("-");
+        billdate2 = Date.parse(billdate2);
+	
+
+        if(billdate > billdate2){
+            document.getElementsByName('billdate[]')[i].value = "";
+            alert('La fecha de factura no puede ser mayor a la fecha de recibido.');
+            document.getElementsByName('billdate[]')[i].focus(); 
+        }
+        
+        if(billdate2 > todayDate){
+            document.getElementsByName('billdate2[]')[i].value = "";
+            alert('La fecha de recibido no puede ser mayor a la fecha del dia del ingreso de la solicitud.');
+            document.getElementsByName('billdate2[]')[i].focus(); 
+        }
+   
+        if((billcurrency == 2) && (billdate == '')){
+            alert('Ingrese una fecha para calcular el tipo de cambio');
+            document.getElementsByName('billdate[]')[i].focus();
+        }
+
+        //Declaramos el subtotal general de la factura a cero
+        var stotalbill = 0;
+        var totalbill = 0;
+  
+        //Sub-total (graba iva)  
+        var stotal = document.getElementsByName('stotal[]')[i].value;
+        stotal = numberFormat(stotal);
+        var stotalbb = 0;
+        if(stotal > 0){
+            stotal = round2(stotal);
+            stotalbill+=parseFloat(stotal);
+            gstotalbill+=parseFloat(stotal);
+            totalbill+=parseFloat(stotal);
+            gtotalbill+=parseFloat(stotal);
+        }
+        
+        //Okay 
+	
+        //IVA (Calculado por el sistema)
+        var tax = stotal*giva;
+        //var tax = ceil(tax);
+        document.getElementsByName('tax[]')[i].value = commas(tax.toFixed(2));
+        if(tax > 0){
+            gtax+=parseFloat(tax);
+	        totalbill+=parseFloat(tax);
+	        gtotalbill+=parseFloat(tax);
+        }
+        //Okay 
+	
+        //Sub-total (exento de iva)
+        var stotal2 = document.getElementsByName('stotal2[]')[i].value;
+        stotal2 = numberFormat(stotal2);
+        if(stotal2 > 0){
+            stotal2 = round2(stotal2);
+            stotalbill+=parseFloat(stotal2);
+            gstotalbill+=parseFloat(stotal2);
+	       totalbill+=parseFloat(stotal2);
+	       gtotalbill+=parseFloat(stotal2);
+        }
+  
+        //Okay 
+   
+        //Escribimos el subtotal general de cada factura
+ 
+        document.getElementsByName('bstotal[]')[i].value = commas(stotalbill);
+  
+	
+   //INTUR
+   intur = 0;
+   var intur = document.getElementsByName('inturammount[]')[i].value;
+  
+   //INTUR ammount
+   intur2 = 0;
+   intur2 = intur*gintur;  
+   document.getElementsByName('inturammount2[]')[i].value = commas(intur2);
+   if(intur2 > 0){
+	   gintur2+=intur2;
+	   totalbill+=parseFloat(intur2);
+	   gtotalbill+=parseFloat(intur2);
+   }
+   //Okay   
+   
+   //Exempt
+   var exempt = document.getElementsByName('exempt[]')[i].value;
+   exempt = parseFloat(exempt);
+   if(parseFloat(exempt) > 0){
+	   gexempt+=parseFloat(exempt);
+   }
+   
+   //Exempt2
+   var exempt2 = document.getElementsByName('exempt2[]')[i].value;
+   exempt2 = parseFloat(exempt2);
+   if(parseFloat(exempt2) > 0){
+	   gexempt2+=parseFloat(exempt2);
+   }
+   
+  
+   //Escribimos el monto en letras del total de la factura.
+   //justLetters(totalbill,i);
+   
+   //Escribimos el monto del total de la factura
+   document.getElementsByName('ammount[]')[i].value = commas(totalbill.toFixed(2));
+   
+   
+   
+   if(billcurrency == 2){
+	   
+	   var tc = getTc(thisBilldate);
+	   document.getElementsByName('btc[]')[i].value = (tc);
+	   if(tc <= 0){
+		   alert('No existe tipo de cambio para la fecha '+billdate);
+		    
+	   }
+	   
+   }
+   else{
+	   var tc = 1;
+	   document.getElementsByName('btc[]')[i].value = "N/A";
+   }
+   
+   //redondear
+   stotalbill = round2(stotalbill);
+   totalbill = round2(totalbill);
+   exempt = round2(exempt);
+   exempt2 = round2(exempt2);
+   //end redondear 
+   
+   var stotalbillnio = parseFloat(stotalbill)*parseFloat(tc);
+   var totalbillnio = parseFloat(totalbill)*parseFloat(tc);
+   gtotalbillnio+=parseFloat(totalbill)*parseFloat(tc);
+   var nioexempt = parseFloat(exempt)*parseFloat(tc); 
+   var nioexempt2 = parseFloat(exempt2)*parseFloat(tc); 
+
+
+   //////////////////////
+   //                  //
+   // RETENCIONES IMI  //
+   //                  //
+   //////////////////////
+   
+   var theconceptr = document.getElementsByName('concept[]')[i].value;
+    
+   
+   var get_stotalbillnio = stotalbillnio;
+   //alert(stotalbillnio);
+   //exento imi
+   if(parseFloat(exempt2) > 0){
+   	stotalbillnio-=parseFloat(nioexempt2);
+   }
+   //alert(theconceptr);
+   if(dspayment == '1' && stotalbillnio >= 1000){  
+   //Retenciones ALCALDIA
+   var p1 = document.getElementById('retention1').value;
+   if(p1 != ""){  
+	 		//Calcula el valor por factura de la retencion ALCALDIA
+			var p1ammount = stotalbillnio*(p1/100);
+			if((document.getElementById('retainer2').checked == true) && (document.getElementsByName('dtype[]')[i].value == 7)){
+				var percent1acp= (100-p1)/100;
+				var p1acp = stotalbillnio*(p1/100);
+				var p1acp = p1acp/percent1acp; 
+				
+			}else{
+				var percent1acp= p1/100;
+				var p1acp = stotalbillnio*percent1acp; 
+			}
+		
+			if(p1ammount > 0){
+				//Escribe el valor de la retencion de alcaldia de la factura
+				document.getElementsByName('bimi[]')[i].value = parseFloat(p1ammount.toFixed(2));
+				document.getElementsByName('ret1a[]')[i].value = parseFloat(p1ammount);
+				if(document.getElementById('retainer2').checked == true){
+					document.getElementsByName('bimi[]')[i].value = parseFloat(p1acp.toFixed(2));
+					document.getElementsByName('ret1a[]')[i].value = parseFloat(p1acp);  
+					gp1acp+=p1acp;
+				}
+		  		//Campo para sumar el total de la retencion de alcaldia
+				gp1ammount += p1ammount;
+				//Campo en el que vamos sumando el total de las retenciones alcaldia y IR
+				gtotalretimi += p1ammount;
+				//Campo en el que vamos sumando el total de las retenciones alcaldia y IR (Dolares)
+				gtotalretimiusd += parseFloat(p1ammount)/parseFloat(tc); 
+				
+	  		}
+					
+   		}else{
+			
+			document.getElementsByName('bimi[]')[i].value = "0.00";
+			document.getElementsByName('ret1a[]')[i].value = "0.00";
+   }
+   
+   }
+   else{
+	   
+	   document.getElementsByName('bimi[]')[i].value = "0.00";
+	   document.getElementsByName('ret1a[]')[i].value = "0.00";
+   }
+   
+   stotalbillnio = get_stotalbillnio; 
+   
+   if(parseFloat(exempt) > 0){
+   	stotalbillnio-=parseFloat(nioexempt);
+   }   
+  
+   if(dspayment == '1' && (stotalbillnio >= 1000 || theconceptr == '43')){   
+    
+   
+   ///////////////////////
+   //                   //
+   //  RETENCIONES IR   //
+   //                   //
+   ///////////////////////
+   
+   
+   var p2 = document.getElementById('retention2').value; 
+   if(p2 != ""){
+			//Calcula el valor por factura de la retencion IR
+	   		var p2ammount = stotalbillnio*(p2/100);
+			
+			if((document.getElementById('retainer3').checked == true) && (document.getElementsByName('dtype[]')[i].value == 7)){
+				var percent2acp= (100-p2)/100;
+				var p2acp = stotalbillnio*(p2/100); 
+				var p2acp = p2acp/percent2acp; 
+			}else{
+				var percent2acp= p2/100;
+				var p2acp = stotalbillnio*percent2acp;
+			}
+		
+			
+	   		if(p2ammount > 0){
+				//Escribe el valor de la retencion de alcaldia de la factura
+				document.getElementsByName('bir[]')[i].value = parseFloat(p2ammount.toFixed(2));
+				document.getElementsByName('ret2a[]')[i].value = parseFloat(p2ammount);
+				if(document.getElementById('retainer3').checked == true){
+					document.getElementsByName('bir[]')[i].value = parseFloat(p2acp.toFixed(2));
+					document.getElementsByName('ret2a[]')[i].value = parseFloat(p2acp);
+					gp2acp += p2acp;
+					
+				}
+				
+				//Campo para sumar el total de la retencion de IR
+				gp2ammount += p2ammount;
+				//Campo en el que vamos sumando el total de las retenciones alcaldia y IR
+				gtotalretir += p2ammount;
+				//Campo en el que vamos sumando el total de las retenciones alcaldia y IR (Dolares)
+				gtotalretirusd += parseFloat(p2ammount)/parseFloat(tc);  
+			}
+					
+		}
+   else{
+   	document.getElementsByName('bir[]')[i].value = "0.00";
+	document.getElementsByName('ret2a[]')[i].value = "0.00";
+   }
+   
+   }
+   else{
+	   
+	   document.getElementsByName('bir[]')[i].value = "0.00";
+	   document.getElementsByName('ret2a[]')[i].value = "0.00";
+   }   
+
+}     
+	//Subtotal facturas 
+	document.getElementById('stotalbill').value = commas(gstotalbill.toFixed(2));
+	document.getElementById('totaltax').value = commas(gtax.toFixed(2)); 
+	document.getElementById('totalbill').value = commas(gtotalbill.toFixed(2));
+	document.getElementById('totalintur').value = commas(gintur2.toFixed(2));
+	document.getElementById('gexempt').value = commas(gexempt.toFixed(2));
+	document.getElementById('gexempt2').value = commas(gexempt2.toFixed(2));
+	document.getElementById("retention1ammount").value = commas(gp1ammount.toFixed(2));
+	document.getElementById("retention2ammount").value = commas(gp2ammount.toFixed(2));
+	if(document.getElementById('retainer2').checked == true){
+		document.getElementById("retention1ammount").value = commas(gp1acp.toFixed(2));	
+	}
+	if(document.getElementById('retainer3').checked == true){
+		document.getElementById("retention2ammount").value = commas(gp2acp.toFixed(2));
+	}
+	
+	var payment = 0;
+	
+//Cancelacion en Cordobas
+if(((currency2pay == 1) && (billcurrency == 1)) || ((currency2pay == 2) && (billcurrency == 1)) || (currency2pay == 1) && (billcurrency == 2)){	 
+		
+		
+		if(parseFloat(gtotalbillnio) > 0){
+			totalpaynio += parseFloat(gtotalbillnio); 
+			//Escribimos es monto antes de retenciones
+			document.getElementById('floatammount2').value = totalpaynio.toFixed(2);  
+		}
+		if(parseFloat(gtotalretimi) > 0){
+			totalpaynio -= parseFloat(gtotalretimi); 
+		} 
+		if(parseFloat(gtotalretir) > 0){
+			totalpaynio -= parseFloat(gtotalretir); 
+		} 
+		if(document.getElementById('retainer2').checked == true){
+			totalpaynio += parseFloat(gtotalretimi);
+		
+		}
+		if(document.getElementById('retainer3').checked == true){
+			totalpaynio += parseFloat(gtotalretir);
+		
+		}
+			
+		document.getElementById('floatpaymentnio').value = totalpaynio.toFixed(2);
+		document.getElementById('floatpayment').value = totalpaynio.toFixed(2);
+		document.getElementById('floatcurrency').value = '1';
+		document.getElementById('payment').value = commas(totalpaynio.toFixed(2))+' Cordobas';
+	}
+	
+//Cancelacion en Dolares
+if((currency2pay == 2) && (billcurrency == 2)){
+		
+		var totalpay = 0;
+		if(parseFloat(gtotalbill) > 0){
+			totalpay += parseFloat(gtotalbill);  
+		}
+		
+		
+		if(parseFloat(gtotalretimiusd) > 0){
+			totalpay -= parseFloat(gtotalretimiusd); 
+		}
+		if(parseFloat(gtotalretirusd) > 0){
+			totalpay -= parseFloat(gtotalretirusd); 
+		}
+		
+		
+		if(document.getElementById('retainer2').checked == true){
+			totalpay += parseFloat(gtotalretimiusd);
+		
+		} 
+		if(document.getElementById('retainer3').checked == true){
+			totalpay += parseFloat(gtotalretirusd);
+		
+		} 
+		
+		
+		document.getElementById('floatpayment').value = totalpay.toFixed(2);
+		document.getElementById('floatcurrency').value = '2';
+		document.getElementById('payment').value = commas(totalpay.toFixed(2))+' Dolares'; 
+		
+		
+		
+		if(parseFloat(gtotalbillnio) > 0){
+			totalpaynio += parseFloat(gtotalbillnio);
+			//Escribimos es monto antes de retenciones
+			document.getElementById('floatammount2').value = totalpaynio.toFixed(2);   
+		}
+		 
+		//start
+		if(parseFloat(gtotalretimi) > 0){
+			totalpaynio -= parseFloat(gtotalretimi); 
+		} 
+		if(parseFloat(gtotalretir) > 0){
+			totalpaynio -= parseFloat(gtotalretir); 
+		} 
+		
+		if(document.getElementById('retainer2').checked == true){
+			totalpaynio += parseFloat(gtotalretimi);
+		
+		}
+		if(document.getElementById('retainer3').checked == true){
+			totalpaynio += parseFloat(gtotalretir); 
+		
+		}
+		//end 
+		
+		document.getElementById('floatpaymentnio').value = totalpaynio.toFixed(2);
+		
+	}
+	
+//EUROS
+if(billcurrency == 3){ 
+
+if(parseFloat(gtotalbillnio) > 0){
+			totalpaynio += parseFloat(gtotalbillnio); 
+			//Escribimos es monto antes de retenciones
+			document.getElementById('floatammount2').value = totalpaynio.toFixed(2);  
+		}
+		if(parseFloat(gtotalretimi) > 0){
+			totalpaynio -= parseFloat(gtotalretimi); 
+		} 
+		if(parseFloat(gtotalretir) > 0){
+			totalpaynio -= parseFloat(gtotalretir); 
+		} 
+		
+		
+		if(document.getElementById('retainer2').checked == true){
+			totalpaynio += parseFloat(gtotalretimi);
+		
+		}
+		if(document.getElementById('retainer3').checked == true){
+			totalpaynio += parseFloat(gtotalretir);
+		
+		}
+			
+		document.getElementById('floatpaymentnio').value = totalpaynio.toFixed(2);
+		document.getElementById('floatpayment').value = totalpaynio.toFixed(2);
+		document.getElementById('floatcurrency').value = '3';
+		document.getElementById('payment').value = commas(totalpaynio.toFixed(2))+' Euros';
+	 
+}
+ 
+//YENES
+if(billcurrency == 4){  
+	
+if(parseFloat(gtotalbillnio) > 0){
+			totalpaynio += parseFloat(gtotalbillnio); 
+			//Escribimos es monto antes de retenciones
+			document.getElementById('floatammount2').value = totalpaynio.toFixed(2);  
+		}
+		if(parseFloat(gtotalretimi) > 0){
+			totalpaynio -= parseFloat(gtotalretimi); 
+		}
+		if(parseFloat(gtotalretir) > 0){
+			totalpaynio -= parseFloat(gtotalretir); 
+		}
+		 
+		if(document.getElementById('retainer2').checked == true){
+			totalpaynio += parseFloat(gtotalretimi);
+		}
+		if(document.getElementById('retainer3').checked == true){
+			totalpaynio += parseFloat(gtotalretir); 
+		}
+			
+		document.getElementById('floatpaymentnio').value = totalpaynio.toFixed(2);
+		document.getElementById('floatpayment').value = totalpaynio.toFixed(2);
+		document.getElementById('floatcurrency').value = '4';
+		document.getElementById('payment').value = commas(totalpaynio.toFixed(2))+' Yenes';
+	
+}
+	
+} 
+
+function loadInsurerInfo(id){
+	$.post("reload-insurers-info.php", { variable: id }, function(data){
+		//alert(data); 
+		if(data == 1){
+			document.getElementById('isInsurer').value = 1;
+			//document.getElementById('dInsurers').style.display = "block";
+			$('.dInsurers').show();
+		}else{
+			document.getElementById('isInsurer').value = 0;
+			//document.getElementsBy('dInsurers').style.display = "none";
+			$('.dInsurers').hide();
+		}
+		
+});		
+}
+	
+function loadCreditcardInfo(id){
+	$.post("reload-creditcard-info.php", { variable: id }, function(data){
+		//alert(data); 
+		if(data == 1){
+			document.getElementById('isCreditcard').value = 1;
+			//document.getElementById('dInsurers').style.display = "block";
+			$('.dCreditcard').show();
+		}else{
+			document.getElementById('isCreditcard').value = 0;
+			//document.getElementsBy('dInsurers').style.display = "none";
+			$('.dCreditcard').hide();
+		}
+		
+});		
+}	
+
+function loadInsurerInfoCaller(value){
+	if(value > 0){
+	if(value == 1){
+		var the_provider = document.getElementById('provider').value;
+		loadInsurerInfo(the_provider);	
+	}else{
+		 $('#provider').select2('data', null);
+		loadInsurerInfo(0);  	
+	}
+	}
+}
+
+function getTc(today) {
+    $.ajaxSetup({async:false}); 
+
+    var returnData = null;
+
+    $.post("payment-order-tc.php", { today: today }, function(data) {
+
+        returnData = data; 
+
+    });
+
+    $.ajaxSetup({async:true}); 
+	return returnData;
+
+} 
+ 
+
+
+/*function justLetters(cammount,i){
+	
+   $.post("reload-numberstoletters.php", { variable: cammount }, function(data){
+	 
+  document.getElementsByName('letters[]')[i].value = data;
+   
+}); 
+} */
+
+function round2(numero){
+	var original=parseFloat(numero);
+	var result=Math.round(original*100)/100 ;
+	return result;
+}
+
+	function leadingZero(inp){
+		var myDateArr = inp.split("-");
+		if(myDateArr[1] < 10){
+			myDateArr[1] = '0'+myDateArr[1];
+		}
+		if(myDateArr[2] < 10){
+			myDateArr[2] = '0'+myDateArr[2];
+		}
+		
+		return myDateArr[0]+'-'+myDateArr[1]+'-'+myDateArr[2];
+	}
+	
+</script>

@@ -1,0 +1,28 @@
+# === Se≈crets / configs ===
+connection.php
+admin/connection.php
+admin/admin-config.php
+admin/config.php
+admin/configuration.php
+
+# === Tests / temp ===
+PRUEBADESFTP.txt
+admin/*prueba*.txt
+
+# === Logs / exports ===
+*.log
+*.pdf
+*.xlsx
+
+# === Runtime folders ===
+logs/
+cache/
+tmp/
+uploads/
+admin/uploads/
+admin/files/
+
+# === OS / IDE ===
+.DS_Store
+.idea/
+.vscode/

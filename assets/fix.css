@@ -1,0 +1,17 @@
+@charset "UTF-8";
+/* CSS Document */
+.logo-default{ 
+	margin:0 !important;
+}
+.sideAniversary{
+	max-width: 245px;
+}
+.hideThis{
+	display: none;
+}
+.refundRadio{
+	margin-left:30px;
+}
+.filterTitle{
+	margin-left:15px;
+}

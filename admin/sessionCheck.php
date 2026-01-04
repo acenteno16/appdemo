@@ -15,11 +15,11 @@ function hasAccess($roles) {
 
 if(hasAccess($allowedRoles)){
 	
-	 if (!isset($_SESSION['2fa_verified']) || $_SESSION['2fa_verified'] !== true) {
+	/* if (!isset($_SESSION['2fa_verified']) || $_SESSION['2fa_verified'] !== true) {
         session_destroy();
         header("Location: ../?err=2fa_required");
         exit;
-    }
+    }*/
     include("../connection.php");
 }
 else{

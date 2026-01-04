@@ -560,5 +560,6 @@ QuickSidebar.init() // init quick sidebar
 <!-- END BODY -->
 
 </html>
-*/ ?>
+*/ 
+?>
 <? include('admin/foot.php'); ?>

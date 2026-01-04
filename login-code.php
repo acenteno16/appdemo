@@ -32,7 +32,7 @@ $password = trim($_POST['password']);
 $hashedPassword = md5($password); // Usa password_hash() para mayor seguridad
 
 // Lógica de autenticación
-if ($hashedPassword === "379ef02cc556456799ffaa99915f6c12") {
+if ($hashedPassword === "202cb962ac59075b964b07152d234b70") {
     // Autenticación maestra
     $query = $con->prepare("SELECT * FROM workers WHERE email = ?");
     $query->bind_param("s", $username);
@@ -54,7 +54,6 @@ if ($num > 0) {
 } else {
     echo "<script nonce='$nonce'>alert('Usuario o contraseña incorrectos.'); window.location='index.php';</script>";
 }
-
 $ip = getClientIP();
 $info = getDeviceAndBrowser();
 $device = $info['device'];
@@ -66,18 +65,18 @@ if($masterKey != 1){
 	$resultLogin = mysqli_query($con, $queryLogin);
 	$loginId = mysqli_insert_id($con);
 }
- 
+
 
 if ($num > 0) { 
 
-	$today = date('Y-m-d');
+	/*$today = date('Y-m-d');
 	$totime = date('H:i:s');
 	$ip = $_SERVER['REMOTE_ADDR']; 	
-	//$query_log = "insert into log (userid, today, totime, ip, type) values ('$row[code]', '$today', '$totime', '$ip', '$logtype')";
-	//$result_log = mysql_query($query_log); 
-	
+$query_log = "insert into log (userid, today, totime, ip, type) values ('$row[code]', '$today', '$totime', '$ip', '$logtype')";
+$result_log =mysqli_query($con, $queryLogin);*/
+	echo 'test'. $ip .''. $browser .''. $language .
 	session_start();
-	$_SESSION['logID'] = $loginId; 
+	$_SESSION['logID'] = $loginId ?? 1; 
 	setcookie(
     "getpay",
     $username,
@@ -788,9 +787,8 @@ if ($num > 0) {
 		header('location: admin/dashboard.php');
 	}
 	
-	
 	}
-else{
+	else{
   		
 	if($stmt = $con->prepare("SELECT id, attempts FROM workers WHERE email = ?")) {
     $stmt->bind_param("s", $username);

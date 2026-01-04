@@ -1,5 +1,4 @@
-<? 
-
+<?php        
 function getClientIP() {
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         return $_SERVER['HTTP_CLIENT_IP'];
@@ -45,7 +44,6 @@ function getPreferredLanguage() {
         $langs = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
         return $langs[0]; // Devuelve el idioma principal
     }
-    return 'Unknown';
+    return 'es-ES';
 }
-
 ?>
